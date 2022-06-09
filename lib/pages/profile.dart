@@ -43,7 +43,7 @@ class _profileState extends State<profile> {
   Widget build(BuildContext context) {
     return StreamBuilder(
         stream: FirebaseFirestore.instance
-            .collection("Patient")
+            .collection("Doctor")
             .doc(FirebaseAuth.instance.currentUser?.uid)
             .snapshots(),
         builder: (BuildContext context,
@@ -60,7 +60,7 @@ class _profileState extends State<profile> {
               children: [
                 CircleAvatar(
                   backgroundImage: NetworkImage(
-                      "https://firebasestorage.googleapis.com/v0/b/daktari-1254d.appspot.com/o/profile.jpg?alt=media&token=f989bf89-8c13-485b-b5ef-8b7013da0413"),
+                      "https://firebasestorage.googleapis.com/v0/b/matibabu-1254d.appspot.com/o/profile.jpg?alt=media&token=f989bf89-8c13-485b-b5ef-8b7013da0413"),
                   radius: 70.0,
                 ),
                 SizedBox(

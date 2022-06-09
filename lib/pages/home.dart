@@ -26,7 +26,7 @@ class _homeState extends State<home> {
         children: [
           StreamBuilder(
               stream: FirebaseFirestore.instance
-                  .collection("Patient")
+                  .collection("Doctor")
                   .doc(_uid)
                   .snapshots(),
               builder: (context,
@@ -58,7 +58,7 @@ class _homeState extends State<home> {
                   color: Colors.teal,
                   child: Center(
                     child: Text(
-                      greeting() + " " + snapshot.data?.get("First Name"),
+                      greeting() + ", Dr. " + snapshot.data?.get("First Name"),
                       style: TextStyle(
                           color: Colors.white,
                           fontSize: 24,

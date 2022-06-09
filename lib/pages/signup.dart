@@ -28,6 +28,8 @@ class _SignupState extends State<Signup> {
     TextEditingController phoneNumbercontroler = TextEditingController();
     TextEditingController passwordcontroler = TextEditingController();
     TextEditingController confirmpasswordcontroler = TextEditingController();
+    TextEditingController licensenumbercontroler = TextEditingController();
+    TextEditingController currentHospitalcontroler = TextEditingController();
 
     double heightOfDevice = MediaQuery.of(context).size.height;
     bool _isLoading = false;
@@ -43,7 +45,9 @@ class _SignupState extends State<Signup> {
           firstNamecontroler.text.trim(),
           lastNamecontroler.text.trim(),
           emailcontroler.text.trim(),
-          phoneNumbercontroler.text);
+          phoneNumbercontroler.text,
+          licensenumbercontroler.text.trim(),
+          currentHospitalcontroler.text);
 
       return Navigator.of(context).pop();
     }
@@ -115,6 +119,19 @@ class _SignupState extends State<Signup> {
                                     SizedBox(
                                       height: 10,
                                     ),
+                                    textfields(licensenumbercontroler,
+                                        "Enter Your Licence number"),
+                                    SizedBox(
+                                      height: 10,
+                                    ),
+                                    textfields(currentHospitalcontroler,
+                                        "Enter your current hospital"),
+
+                                    SizedBox(
+                                      height: 10,
+                                    ),
+
+                                    /// add sex and specialty
                                     passwordFields(
                                         passwordcontroler, "Create password"),
                                     SizedBox(
@@ -135,10 +152,9 @@ class _SignupState extends State<Signup> {
                                           ? CircularProgressIndicator()
                                           : ElevatedButton(
                                               onPressed: _input,
-                                              child: Text("Sign up"),
                                               style: ElevatedButton.styleFrom(
-                                                  primary: Color.fromRGBO(
-                                                      43, 147, 128, 20)),
+                                                  primary: Colors.teal),
+                                              child: Text("Sign up"),
                                             ),
                                     )
                                   ],
@@ -164,8 +180,6 @@ Widget textfields(
 ) {
   return TextFormField(
     controller: textfieldcontroler,
-
-    // ignore: prefer_const_constructors
     decoration: InputDecoration(
       labelText: placeholder,
       //hintText: placeholder
@@ -198,8 +212,6 @@ Widget passwordFields(
   return TextFormField(
     controller: textfieldcontroler,
     obscureText: true,
-
-    // ignore: prefer_const_constructors
     decoration: InputDecoration(
       labelText: placeholder,
       //hintText: placeholder

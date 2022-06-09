@@ -8,15 +8,17 @@ class RestApi {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   Future<String> createData(String firstName, String lastName, String email,
-      String phoneNumber) async {
-    final User? _user = _auth.currentUser;
-    final _uid = _user?.uid;
+      String phoneNumber, String license, String curentHospital) async {
+    final User? user = _auth.currentUser;
+    final uid = user?.uid;
 
-    await _fire.collection("Patient").doc(_uid).set(
+    await _fire.collection("Doctor").doc(uid).set(
       {
-        "id": _uid,
+        "id": uid,
         "First Name": firstName,
         "Last Name": lastName,
+        "License Number": license,
+        "Current Hospital": curentHospital,
         "Email": email,
         "Phone Number": phoneNumber
       },
@@ -25,12 +27,12 @@ class RestApi {
   }
 
   Future<void> readData() async {
-    final User? _user = _auth.currentUser;
-    final _uid = _user?.uid;
+    final User? user = _auth.currentUser;
+    final uid = user?.uid;
     var userDetailsList = [];
 
     final DocumentSnapshot docs =
-        await _fire.collection("Patient").doc(_uid).get();
+        await _fire.collection("Patient").doc(uid).get();
 
     String name = docs.get("Email");
     String phoneNumber = docs.get("Phone Number");
@@ -55,12 +57,13 @@ class RestApi {
     String date,
     String address,
   ) async {
-    final User? _user = _auth.currentUser;
-    final _uid = _user?.uid;
+    final User? user = _auth.currentUser;
+
+    final uid = user?.uid;
 
     await _fire.collection("Appointments").doc().set(
       {
-        "Patient Id": _uid,
+        "Patient Id": uid,
         "Date": date,
         "Time": time,
         "Consultation": specialty,

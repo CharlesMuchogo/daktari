@@ -2,7 +2,6 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:daktari/GlobalComponents/alert_dialogue.dart';
 
 class AppointmentPage extends StatelessWidget {
   final String patientId;
