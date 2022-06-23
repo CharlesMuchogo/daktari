@@ -20,7 +20,8 @@ class RestApi {
         "License Number": license,
         "Current Hospital": curentHospital,
         "Email": email,
-        "Phone Number": phoneNumber
+        "Phone Number": phoneNumber,
+        "Profile Photo": "",
       },
     );
     return "Signup successful";

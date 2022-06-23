@@ -89,31 +89,7 @@ class _homeState extends State<home> {
                       SizedBox(
                         height: 10,
                       ),
-                      upcomingAppointments(_uid!),
-                      SizedBox(
-                        height: 33,
-                      ),
-                      textInfo('My favorite doctors'),
-                      SizedBox(
-                        height: 10,
-                      ),
-                      InkWell(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => DoctorInfo()),
-                            );
-                          },
-                          child: info()),
-                      SizedBox(
-                        height: 33,
-                      ),
-                      textInfo('Top ratted specialist'),
-                      SizedBox(
-                        height: 10,
-                      ),
-                      info(),
+                      doctorInfoCard()
                     ],
                   ),
                 ),
@@ -137,104 +113,15 @@ Widget textInfo(String text) {
   );
 }
 
-Widget info() {
-  return Container(
-    child: SingleChildScrollView(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SizedBox(
-            height: 150,
-            child: ListView.builder(
-              itemCount: 10,
-              scrollDirection: Axis.horizontal,
-              itemBuilder: (context, index) => Container(
-                height: 200,
-                width: 300,
-                margin: EdgeInsets.all(15),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.all(
-                    Radius.circular(5),
-                  ),
-                  color: Color.fromRGBO(245, 242, 242, 20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey,
-                      offset: Offset(0.0, 1.0), //(x,y)
-                      blurRadius: 6.0,
-                    ),
-                  ],
-                ),
-                child: Center(
-                  child: infocards("Charles Muchogo",
-                      'assets/images/profile.jpg', "Gaenacologist"),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    ),
-  );
-}
-
-Widget infocards(String name, String displayPhoto, String doctorSpecialty) {
-  return ListTile(
-    leading: CircleAvatar(
-      backgroundImage: AssetImage(displayPhoto),
-      radius: 32.0,
-    ),
-    title: Text(
-      name,
-      style: TextStyle(
-        color: Colors.black,
-        fontSize: 18,
-      ),
-    ),
-    subtitle: Text(
-      doctorSpecialty,
-      style: TextStyle(
-        color: Color.fromARGB(255, 21, 121, 91),
-        fontSize: 15,
-      ),
-    ),
-    trailing: Icon(
-      Icons.more_vert,
-      color: Color.fromARGB(255, 21, 121, 91),
-    ),
-  );
-}
-
-Widget upcomingAppointments(String _uid) {
+Widget doctorInfoCard() {
   return StreamBuilder(
-      stream: FirebaseFirestore.instance
-          .collection("Appointments")
-          .orderBy("Date")
-          .snapshots(),
-      builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+      stream: FirebaseFirestore.instance.collection("Appointments").snapshots(),
+      builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
         if (!snapshot.hasData) {
-          return Container(
-            height: 200,
-            width: 300,
-            child: Center(
-              child: CircularProgressIndicator(),
-            ),
-          );
+          return CircularProgressIndicator();
         }
         if (snapshot.hasError) {
-          return Text("Oops. An error occured. Try again later");
-        }
-        if (snapshot.data!.size <= 0) {
-          return SizedBox(
-            height: 150,
-            width: 300,
-            child: Center(
-              child: Text(
-                "You have no upcomming appointments",
-                style: TextStyle(fontSize: 17),
-              ),
-            ),
-          );
+          return Text("An error occured. please try again later");
         }
 
         return SingleChildScrollView(
@@ -242,12 +129,12 @@ Widget upcomingAppointments(String _uid) {
             mainAxisSize: MainAxisSize.min,
             children: [
               SizedBox(
-                height: 150,
+                height: 700,
                 child: ListView.builder(
-                  itemCount: snapshot.data?.size,
-                  scrollDirection: Axis.horizontal,
+                  itemCount: snapshot.data!.docs.length,
+                  scrollDirection: Axis.vertical,
                   itemBuilder: (context, index) => Container(
-                    height: 200,
+                    height: 100,
                     width: 300,
                     margin: EdgeInsets.all(15),
                     decoration: BoxDecoration(
@@ -258,20 +145,17 @@ Widget upcomingAppointments(String _uid) {
                       boxShadow: [
                         BoxShadow(
                           color: Colors.grey,
-                          offset: Offset(0.0, 1.0),
+                          offset: Offset(0.0, 1.0), //(x,y)
                           blurRadius: 6.0,
                         ),
                       ],
                     ),
                     child: Center(
-                      child: appointmentcards(
-                        context,
-                        snapshot.data!.docs[index]["Time"],
-                        snapshot.data!.docs[index]["Address"],
-                        snapshot.data!.docs[index].id,
-                        snapshot.data!.docs[index]["Date"],
-                        snapshot.data!.docs[index]["Consultation"],
-                      ),
+                      child: infocards(
+                          context,
+                          snapshot.data!.docs[index].get("Date"),
+                          snapshot.data!.docs[index].get("Address"),
+                          snapshot.data!.docs[index].get("Consultation")),
                     ),
                   ),
                 ),
@@ -282,66 +166,29 @@ Widget upcomingAppointments(String _uid) {
       });
 }
 
-Widget appointmentcards(
-  BuildContext context,
-  String time,
-  String address,
-  String patientId,
-  String dateOfAppointment,
-  String consultation,
-) {
-  return ListTile(
-    leading: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text(
-          dateOfAppointment,
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 18,
-          ),
+Widget infocards(BuildContext context, String dateOfAppointment,
+    String addressOfAppointment, String consultationPurpose) {
+  return InkWell(
+    onTap: () {},
+    child: ListTile(
+      leading: Text(addressOfAppointment),
+      title: Text(
+        dateOfAppointment,
+        style: TextStyle(
+          color: Colors.black,
+          fontSize: 18,
         ),
-      ],
-    ),
-
-    title: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text(
-          time,
-          style: TextStyle(
-            color: Colors.teal,
-            fontSize: 18,
-          ),
+      ),
+      subtitle: Text(
+        consultationPurpose,
+        style: TextStyle(
+          color: Colors.teal,
+          fontSize: 15,
         ),
-        SizedBox(
-          height: 15,
-        ),
-        Text(
-          address,
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 18,
-          ),
-        ),
-      ],
-    ),
-    // subtitle: ,
-    trailing: InkWell(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) => AppointmentPage(
-                    patientId,
-                    dateOfAppointment,
-                    consultation,
-                  )),
-        ); // navigate to Appointments page
-      },
-      child: Icon(
+      ),
+      trailing: Icon(
         Icons.more_vert,
-        color: Color.fromARGB(255, 21, 121, 91),
+        color: Colors.teal,
       ),
     ),
   );

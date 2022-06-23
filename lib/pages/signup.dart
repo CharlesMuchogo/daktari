@@ -32,7 +32,7 @@ class _SignupState extends State<Signup> {
     TextEditingController currentHospitalcontroler = TextEditingController();
 
     double heightOfDevice = MediaQuery.of(context).size.height;
-    bool _isLoading = false;
+    bool isLoading = false;
 
     void _input() async {
       await context.read<AuthenticationService>().signUp(
@@ -58,7 +58,7 @@ class _SignupState extends State<Signup> {
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               setState(() {
-                _isLoading = true;
+                isLoading = true;
               });
               return MaterialApp(
                 home: Scaffold(
@@ -72,6 +72,9 @@ class _SignupState extends State<Signup> {
                 ),
               );
             }
+            List<String> gender = ["Male", "Female", "Non-binary"];
+
+            String dropdownValue = "Male";
 
             return Column(
               children: [
@@ -81,7 +84,7 @@ class _SignupState extends State<Signup> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      logo("daktari", 32, Colors.teal),
+                      logo("Daktari", 32, Colors.teal),
                       logo("Health Is Wealth", 15, Colors.black)
                     ],
                   ),
@@ -119,6 +122,27 @@ class _SignupState extends State<Signup> {
                                     SizedBox(
                                       height: 10,
                                     ),
+                                    ListTile(
+                                      title: Text("Select your gender"),
+                                      trailing: DropdownButton(
+                                        value: dropdownValue,
+                                        onChanged: (value) {
+                                          setState(
+                                            () {
+                                              dropdownValue = value.toString();
+                                            },
+                                          );
+                                        },
+                                        items: gender.map(
+                                          (String items) {
+                                            return DropdownMenuItem(
+                                              value: items,
+                                              child: Text(items),
+                                            );
+                                          },
+                                        ).toList(),
+                                      ),
+                                    ),
                                     textfields(licensenumbercontroler,
                                         "Enter Your Licence number"),
                                     SizedBox(
@@ -148,7 +172,7 @@ class _SignupState extends State<Signup> {
                                     SizedBox(
                                       height: 42,
                                       width: 196,
-                                      child: _isLoading
+                                      child: isLoading
                                           ? CircularProgressIndicator()
                                           : ElevatedButton(
                                               onPressed: _input,
