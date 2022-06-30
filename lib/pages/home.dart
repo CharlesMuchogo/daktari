@@ -1,11 +1,10 @@
 // ignore_for_file: prefer_const_constructors, unnecessary_new, prefer_const_literals_to_create_immutables
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:daktari/pages/appointment.dart';
+import 'package:daktari/pages/login.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-
-import 'package:daktari/pages/appointment.dart';
-import 'package:daktari/pages/doctor_information.dart';
 
 class home extends StatefulWidget {
   @override
@@ -53,7 +52,7 @@ class _homeState extends State<home> {
                 }
 
                 return Container(
-                  height: heightOfDevice / 4,
+                  height: heightOfDevice * 0.2,
                   width: double.infinity,
                   color: Colors.teal,
                   child: Center(
@@ -85,11 +84,11 @@ class _homeState extends State<home> {
                       SizedBox(
                         height: 33,
                       ),
-                      textInfo('Upcoming appointments'),
+                      Center(child: textInfo('Upcoming appointments')),
                       SizedBox(
                         height: 10,
                       ),
-                      doctorInfoCard()
+                      upcommingAppointmentCard(context)
                     ],
                   ),
                 ),
@@ -113,9 +112,15 @@ Widget textInfo(String text) {
   );
 }
 
-Widget doctorInfoCard() {
+Widget upcommingAppointmentCard(BuildContext context) {
+  double width = MediaQuery.of(context).size.width;
+  double height = MediaQuery.of(context).size.height;
   return StreamBuilder(
-      stream: FirebaseFirestore.instance.collection("Appointments").snapshots(),
+      stream: FirebaseFirestore.instance
+          .collection("Doctor")
+          .doc(FirebaseAuth.instance.currentUser!.uid)
+          .collection("My appointments")
+          .snapshots(),
       builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
         if (!snapshot.hasData) {
           return CircularProgressIndicator();
@@ -134,8 +139,7 @@ Widget doctorInfoCard() {
                   itemCount: snapshot.data!.docs.length,
                   scrollDirection: Axis.vertical,
                   itemBuilder: (context, index) => Container(
-                    height: 100,
-                    width: 300,
+                    height: height * 0.15,
                     margin: EdgeInsets.all(15),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.all(
@@ -151,11 +155,35 @@ Widget doctorInfoCard() {
                       ],
                     ),
                     child: Center(
-                      child: infocards(
+                      child: InkWell(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => AppointmentPage(
+                                snapshot.data!.docs[index].id,
+                                snapshot.data!.docs[index]["Patient Id"],
+                                snapshot.data!.docs[index]["Date"],
+                                snapshot.data!.docs[index]["Consultation"],
+                                snapshot.data!.docs[index]["Time"],
+                                snapshot.data!.docs[index]["Address"],
+                                snapshot.data!.docs[index]["Doctor Name"],
+                                snapshot.data!.docs[index]["Status"],
+                              ),
+                            ),
+                          ); // navigate to Appointments page
+                        },
+                        child: infocards(
                           context,
                           snapshot.data!.docs[index].get("Date"),
-                          snapshot.data!.docs[index].get("Address"),
-                          snapshot.data!.docs[index].get("Consultation")),
+                          snapshot.data!.docs[index].get("Patient Id"),
+                          snapshot.data!.docs[index].get("Time"),
+                          snapshot.data!.docs[index].get("Status"),
+                          snapshot.data!.docs[index]["Address"],
+                          snapshot.data!.docs[index]["Consultation"],
+                          snapshot.data!.docs[index].id,
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -166,30 +194,101 @@ Widget doctorInfoCard() {
       });
 }
 
-Widget infocards(BuildContext context, String dateOfAppointment,
-    String addressOfAppointment, String consultationPurpose) {
-  return InkWell(
-    onTap: () {},
-    child: ListTile(
-      leading: Text(addressOfAppointment),
-      title: Text(
-        dateOfAppointment,
-        style: TextStyle(
-          color: Colors.black,
-          fontSize: 18,
-        ),
-      ),
-      subtitle: Text(
-        consultationPurpose,
-        style: TextStyle(
-          color: Colors.teal,
-          fontSize: 15,
-        ),
-      ),
-      trailing: Icon(
-        Icons.more_vert,
-        color: Colors.teal,
-      ),
-    ),
-  );
+Widget infocards(
+    BuildContext context,
+    String dateOfAppointment,
+    String patientId,
+    String timeOfappointment,
+    String statusOfAppointment,
+    String adressOfAppointment,
+    String consultation,
+    String appointmentId) {
+  return StreamBuilder(
+      stream: FirebaseFirestore.instance
+          .collection("Patient")
+          .doc(patientId)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+        return InkWell(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => AppointmentPage(
+                  appointmentId,
+                  patientId,
+                  dateOfAppointment,
+                  consultation,
+                  timeOfappointment,
+                  adressOfAppointment,
+                  (snapshot.data!.get("First Name") +
+                      " " +
+                      snapshot.data!.get("Last Name")),
+                  statusOfAppointment,
+                ),
+              ),
+            ); // navigate to Appointments page
+          },
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ListTile(
+                title: Text(
+                  (snapshot.data!.get("First Name") +
+                      " " +
+                      snapshot.data!.get("Last Name")),
+                  style: TextStyle(fontSize: 18),
+                ),
+                trailing: CircleAvatar(
+                  backgroundImage:
+                      NetworkImage(snapshot.data?.get("Profile Photo")),
+                  radius: 32,
+                ),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      Icon(Icons.calendar_month_outlined),
+                      SizedBox(
+                        width: 10,
+                      ),
+                      Text(dateOfAppointment)
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Icon(Icons.watch_later_outlined),
+                      SizedBox(
+                        width: 10,
+                      ),
+                      Text(timeOfappointment),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      CircleAvatar(
+                        backgroundColor: Colors.amber,
+                        radius: 6,
+                      ),
+                      SizedBox(
+                        width: 10,
+                      ),
+                      Text(statusOfAppointment)
+                    ],
+                  )
+                ],
+              )
+            ],
+          ),
+        );
+      });
 }

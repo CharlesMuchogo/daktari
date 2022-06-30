@@ -6,6 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:daktari/GlobalComponents/restapi.dart';
 
@@ -26,19 +27,28 @@ class _profileState extends State<profile> {
   var imageFile;
 
   var imageUrl;
+  var croppedImage;
 
-  _pickfromGallery(String imagename) async {
-    var pictureFile = await ImagePicker.platform
-        .getImageFromSource(source: ImageSource.gallery);
+  _pickImage(String imagename, ImageSource source) async {
+    var pictureFile =
+        await ImagePicker.platform.getImageFromSource(source: source);
 
     setState(() {
       imageFile = File(pictureFile!.path);
     });
-    final _firebasestorage = FirebaseStorage.instance;
+    final firebasestorage = FirebaseStorage.instance;
 
     if (imageFile != null) {
+      croppedImage = await ImageCropper.platform.cropImage(
+        sourcePath: imageFile,
+        aspectRatio: CropAspectRatio(ratioX: 1, ratioY: 1),
+        compressQuality: 100,
+        maxHeight: 700,
+        maxWidth: 700,
+        compressFormat: ImageCompressFormat.jpg,
+      );
       //Upload to Firebase
-      var snapshot = await _firebasestorage
+      var snapshot = await firebasestorage
           .ref()
           .child('images/{$imagename}')
           .putFile(imageFile);
@@ -46,35 +56,6 @@ class _profileState extends State<profile> {
       setState(() {
         imageUrl = downloadUrl;
       });
-      FirebaseFirestore.instance
-          .collection("Doctor")
-          .doc(FirebaseAuth.instance.currentUser?.uid)
-          .update({"Profile Photo": imageUrl});
-    } else {
-      print('No Image Path Received');
-    }
-  }
-
-  _pickfromCamera(String imagename) async {
-    var pictureFile = await ImagePicker.platform
-        .getImageFromSource(source: ImageSource.camera);
-
-    setState(() {
-      imageFile = File(pictureFile!.path);
-    });
-
-    final _firebasestorage = FirebaseStorage.instance;
-    if (imageFile != null) {
-      //Upload to Firebase
-      var snapshot = await _firebasestorage
-          .ref()
-          .child('images/$imagename')
-          .putFile(imageFile);
-      var downloadUrl = await snapshot.ref.getDownloadURL();
-      setState(() {
-        imageUrl = downloadUrl;
-      });
-
       FirebaseFirestore.instance
           .collection("Doctor")
           .doc(FirebaseAuth.instance.currentUser?.uid)
@@ -108,16 +89,17 @@ class _profileState extends State<profile> {
             child: ListBody(
               children: [
                 InkWell(
-                  
                   onTap: () {
-                    Navigator.of(context).pop(_pickfromGallery(imageName));
+                    Navigator.of(context)
+                        .pop(_pickImage(imageName, ImageSource.gallery));
                   },
                   child: Text("Gallery"),
                 ),
                 Padding(padding: EdgeInsets.all(8)),
                 InkWell(
                   onTap: () {
-                    Navigator.of(context).pop(_pickfromCamera(imageName));
+                    Navigator.of(context)
+                        .pop(_pickImage(imageName, ImageSource.camera));
                   },
                   child: Text("Camera"),
                 )
