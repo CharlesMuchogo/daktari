@@ -3,6 +3,7 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:daktari/pages/updatedetails.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -39,14 +40,14 @@ class _profileState extends State<profile> {
     final firebasestorage = FirebaseStorage.instance;
 
     if (imageFile != null) {
-      croppedImage = await ImageCropper.platform.cropImage(
-        sourcePath: imageFile,
-        aspectRatio: CropAspectRatio(ratioX: 1, ratioY: 1),
-        compressQuality: 100,
-        maxHeight: 700,
-        maxWidth: 700,
-        compressFormat: ImageCompressFormat.jpg,
-      );
+      // croppedImage = await ImageCropper.platform.cropImage(
+      //   sourcePath: imageFile,
+      //   aspectRatio: CropAspectRatio(ratioX: 1, ratioY: 1),
+      //   compressQuality: 100,
+      //   maxHeight: 700,
+      //   maxWidth: 700,
+      //   compressFormat: ImageCompressFormat.jpg,
+      // );
       //Upload to Firebase
       var snapshot = await firebasestorage
           .ref()
@@ -66,17 +67,10 @@ class _profileState extends State<profile> {
   }
 
   Widget displayImage(String profileUrl) {
-    if (profileUrl == "") {
-      return CircleAvatar(
-        backgroundImage: AssetImage("assets/images/emptyprofile.png"),
-        radius: 70,
-      );
-    } else {
-      return CircleAvatar(
-        backgroundImage: NetworkImage(profileUrl),
-        radius: 70,
-      );
-    }
+    return CircleAvatar(
+      backgroundImage: NetworkImage(profileUrl),
+      radius: 70,
+    );
   }
 
   Future imagepickerdialogue(BuildContext context, String imageName) {
@@ -149,157 +143,191 @@ class _profileState extends State<profile> {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder(
-        stream: FirebaseFirestore.instance
-            .collection("Doctor")
-            .doc(FirebaseAuth.instance.currentUser?.uid)
-            .snapshots(),
-        builder: (BuildContext context,
-            AsyncSnapshot<DocumentSnapshot<Map<String, dynamic>>> snapshot) {
-          if (!snapshot.hasData) {
-            return Center(
-              child: CircularProgressIndicator(),
-            );
-          }
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Profile"),
+        centerTitle: true,
+      ),
+      body: StreamBuilder(
+          stream: FirebaseFirestore.instance
+              .collection("Doctor")
+              .doc(FirebaseAuth.instance.currentUser?.uid)
+              .snapshots(),
+          builder: (BuildContext context,
+              AsyncSnapshot<DocumentSnapshot<Map<String, dynamic>>> snapshot) {
+            if (!snapshot.hasData) {
+              return Center(
+                child: CircularProgressIndicator(),
+              );
+            }
 
-          return Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                SizedBox(
-                  width: 25,
-                ),
-                displayImage(snapshot.data?.get("Profile Photo")),
-                SizedBox(
-                  width: 10,
-                ),
-                InkWell(
-                  onTap: () {
-                    imagepickerdialogue(context, snapshot.data?.get("Email"));
-                  },
-                  child: Icon(
-                    Icons.camera_alt_outlined,
-                    size: 30,
-                    color: Colors.grey[700],
-                  ),
-                ),
-              ]),
-              SizedBox(
-                height: 10,
-              ),
-              Row(
+            return SingleChildScrollView(
+              child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
-                    snapshot.data?.get("First Name"),
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  SizedBox(
+                    height: 25,
+                  ),
+                  Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                    SizedBox(
+                      width: 25,
+                    ),
+                    displayImage(snapshot.data?.get("Profile Photo")),
+                    SizedBox(
+                      width: 10,
+                    ),
+                    InkWell(
+                      onTap: () {
+                        imagepickerdialogue(
+                            context, snapshot.data?.get("Email"));
+                      },
+                      child: Icon(
+                        Icons.camera_alt_outlined,
+                        size: 30,
+                        color: Colors.grey[700],
+                      ),
+                    ),
+                  ]),
+                  SizedBox(
+                    height: 10,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        snapshot.data?.get("First Name"),
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold),
+                      ),
+                      SizedBox(
+                        width: MediaQuery.of(context).size.width * 0.02,
+                      ),
+                      Text(
+                        snapshot.data?.get("Last Name"),
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold),
+                      ),
+                    ],
                   ),
                   SizedBox(
-                    width: MediaQuery.of(context).size.width * 0.02,
+                    height: 30,
                   ),
                   Text(
-                    snapshot.data?.get("Last Name"),
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    "User Information",
+                    style: TextStyle(
+                        fontSize: 20,
+                        color: Colors.teal,
+                        fontWeight: FontWeight.bold),
+                  ),
+                  Divider(
+                    color: Colors.black,
+                    thickness: 1,
+                  ),
+                  SizedBox(
+                    height: 20,
+                  ),
+                  Center(
+                    child: ElevatedButton(
+                      child: Text("Update your details",
+                          style: TextStyle(color: Colors.black)),
+                      style:
+                          ElevatedButton.styleFrom(primary: Colors.grey[200]),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => UpdateDetails(
+                              FirebaseAuth.instance.currentUser!.uid,
+                              snapshot.data?.get("First Name"),
+                              snapshot.data?.get("Last Name"),
+                              snapshot.data?.get("Phone Number"),
+                              snapshot.data?.get("Current Hospital"),
+                            ),
+                          ),
+                        ); // navigate t
+                      },
+                    ),
+                  ),
+                  UserInfo("Email", snapshot.data?.get("Email"),
+                      Icons.email_outlined),
+                  UserInfo(
+                      "Current Hospital",
+                      snapshot.data?.get("Current Hospital"),
+                      Icons.location_on_outlined),
+                  UserInfo(
+                    "Phone Number",
+                    snapshot.data?.get("Phone Number"),
+                    Icons.phone,
+                  ),
+
+                  Divider(
+                    color: Colors.black,
+                    thickness: 1,
+                  ),
+                  // ListTile(
+                  //   leading: Icon(
+                  //     Icons.dark_mode,
+                  //     size: 30,
+                  //   ),
+                  //   title: Text('Dark Mode'),
+                  //   trailing: Switch(
+                  //     onChanged: toggleSwitch,
+                  //     value: isSwitched,
+                  //     activeColor: Colors.black,
+                  //     activeTrackColor: Colors.black54,
+                  //     inactiveThumbColor: Colors.white54,
+                  //     inactiveTrackColor: Colors.white,
+                  //   ),
+                  // ),
+                  InkWell(
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) {
+                          return AlertDialog(
+                            title: Text("Do you want to Logout?"),
+                            actions: [
+                              MaterialButton(
+                                elevation: 5,
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                                child: Text(
+                                  "No",
+                                  style: TextStyle(
+                                      color: Colors.teal, fontSize: 18),
+                                ),
+                              ),
+                              MaterialButton(
+                                elevation: 5,
+                                onPressed: () {
+                                  Navigator.of(context).pop(signOut());
+                                },
+                                child: Text(
+                                  "Yes",
+                                  style: TextStyle(
+                                      color: Colors.red, fontSize: 18),
+                                ),
+                              )
+                            ],
+                          );
+                        },
+                      );
+                    },
+                    child: ListTile(
+                      title: Text('Logout'),
+                      leading: Icon(
+                        Icons.logout_outlined,
+                        color: Colors.black,
+                        size: 30,
+                      ),
+                    ),
                   ),
                 ],
               ),
-              SizedBox(
-                height: 30,
-              ),
-              Text(
-                "User Information",
-                style: TextStyle(
-                    fontSize: 20,
-                    color: Colors.teal,
-                    fontWeight: FontWeight.bold),
-              ),
-              Divider(
-                color: Colors.black,
-                thickness: 1,
-              ),
-              SizedBox(
-                height: 28,
-              ),
-              UserInfo(
-                  "Email", snapshot.data?.get("Email"), Icons.email_outlined),
-              UserInfo("Address", "Maasai Lodge", Icons.location_on_outlined),
-              UserInfo(
-                "Phone Number",
-                snapshot.data?.get("Phone Number"),
-                Icons.phone,
-              ),
-              Text(
-                "User Settings",
-                style: TextStyle(
-                    fontSize: 20,
-                    color: Colors.teal,
-                    fontWeight: FontWeight.bold),
-              ),
-              Divider(
-                color: Colors.black,
-                thickness: 1,
-              ),
-              ListTile(
-                leading: Icon(
-                  Icons.dark_mode,
-                  size: 30,
-                ),
-                title: Text('Dark Mode'),
-                trailing: Switch(
-                  onChanged: toggleSwitch,
-                  value: isSwitched,
-                  activeColor: Colors.black,
-                  activeTrackColor: Colors.black54,
-                  inactiveThumbColor: Colors.white54,
-                  inactiveTrackColor: Colors.white,
-                ),
-              ),
-              InkWell(
-                onTap: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) {
-                      return AlertDialog(
-                        title: Text("Do you want to Logout?"),
-                        actions: [
-                          MaterialButton(
-                            elevation: 5,
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                            child: Text(
-                              "No",
-                              style:
-                                  TextStyle(color: Colors.teal, fontSize: 18),
-                            ),
-                          ),
-                          MaterialButton(
-                            elevation: 5,
-                            onPressed: () {
-                              Navigator.of(context).pop(signOut());
-                            },
-                            child: Text(
-                              "Yes",
-                              style: TextStyle(color: Colors.red, fontSize: 18),
-                            ),
-                          )
-                        ],
-                      );
-                    },
-                  );
-                },
-                child: ListTile(
-                  title: Text('Logout'),
-                  leading: Icon(
-                    Icons.logout_outlined,
-                    color: Colors.black,
-                    size: 30,
-                  ),
-                ),
-              ),
-            ],
-          );
-        });
+            );
+          }),
+    );
   }
 }
 

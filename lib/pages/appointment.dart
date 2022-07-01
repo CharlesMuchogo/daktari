@@ -60,13 +60,6 @@ class AppointmentPage extends StatelessWidget {
     }
 
     confirmappointment() {
-      showDialog(
-          context: context,
-          builder: (context) {
-            return Center(
-              child: CircularProgressIndicator(),
-            );
-          });
       FirebaseFirestore.instance
           .collection("Doctor")
           .doc(FirebaseAuth.instance.currentUser!.uid)
@@ -81,7 +74,21 @@ class AppointmentPage extends StatelessWidget {
           .doc(appointmentId)
           .update({"Status": "Confirmed"});
 
-      Navigator.pop(context);
+      showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: Text("Confirmed"),
+              content:
+                  Text("You have successifully confirmed your appointment"),
+              actions: [
+                MaterialButton(
+                  onPressed: null,
+                  child: Text("Okay"),
+                )
+              ],
+            );
+          });
     }
 
     return Scaffold(

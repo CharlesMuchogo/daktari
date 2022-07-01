@@ -2,9 +2,10 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:daktari/pages/appointment.dart';
-import 'package:daktari/pages/login.dart';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 
 class home extends StatefulWidget {
   @override
@@ -79,7 +80,7 @@ class _homeState extends State<home> {
                     ),
                   ),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       SizedBox(
                         height: 33,
@@ -113,20 +114,25 @@ Widget textInfo(String text) {
 }
 
 Widget upcommingAppointmentCard(BuildContext context) {
-  double width = MediaQuery.of(context).size.width;
   double height = MediaQuery.of(context).size.height;
   return StreamBuilder(
       stream: FirebaseFirestore.instance
           .collection("Doctor")
           .doc(FirebaseAuth.instance.currentUser!.uid)
           .collection("My appointments")
+          .orderBy("Date", descending: true)
           .snapshots(),
       builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
         if (!snapshot.hasData) {
-          return CircularProgressIndicator();
+          return Center(child: CircularProgressIndicator());
         }
         if (snapshot.hasError) {
           return Text("An error occured. please try again later");
+        }
+        if (snapshot.data!.docs.isEmpty) {
+          Center(
+            child: Text("You do not have any upcoming appointments"),
+          );
         }
 
         return SingleChildScrollView(
@@ -140,7 +146,8 @@ Widget upcommingAppointmentCard(BuildContext context) {
                   scrollDirection: Axis.vertical,
                   itemBuilder: (context, index) => Container(
                     height: height * 0.15,
-                    margin: EdgeInsets.all(15),
+                    margin: EdgeInsets.only(
+                        top: 15, bottom: 15, left: 25, right: 25),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.all(
                         Radius.circular(5),
@@ -211,7 +218,10 @@ Widget infocards(
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return Center(
-            child: CircularProgressIndicator(),
+            child: SizedBox(
+              height: 200,
+              width: 300,
+            ),
           );
         }
         return InkWell(
@@ -257,7 +267,10 @@ Widget infocards(
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      Icon(Icons.calendar_month_outlined),
+                      Icon(
+                        Icons.calendar_month_outlined,
+                        color: Colors.grey,
+                      ),
                       SizedBox(
                         width: 10,
                       ),
@@ -266,7 +279,10 @@ Widget infocards(
                   ),
                   Row(
                     children: [
-                      Icon(Icons.watch_later_outlined),
+                      Icon(
+                        Icons.watch_later_outlined,
+                        color: Colors.grey,
+                      ),
                       SizedBox(
                         width: 10,
                       ),
@@ -276,7 +292,11 @@ Widget infocards(
                   Row(
                     children: [
                       CircleAvatar(
-                        backgroundColor: Colors.amber,
+                        backgroundColor: statusOfAppointment == "Confirmed"
+                            ? Colors.green
+                            : statusOfAppointment == "Pending"
+                                ? Colors.amber
+                                : Colors.red,
                         radius: 6,
                       ),
                       SizedBox(

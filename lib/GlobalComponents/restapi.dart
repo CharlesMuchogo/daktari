@@ -21,7 +21,8 @@ class RestApi {
         "Current Hospital": curentHospital,
         "Email": email,
         "Phone Number": phoneNumber,
-        "Profile Photo": "",
+        "Profile Photo":
+            "https://firebasestorage.googleapis.com/v0/b/matibabu-1254d.appspot.com/o/images%2Femptyprofile.png?alt=media&token=288629bd-5959-4bf0-8c92-8b2709c4fbb4",
       },
     );
     return "Signup successful";
