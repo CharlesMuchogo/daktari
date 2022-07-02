@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_const_constructors
+// ignore_for_file: prefer_const_constructors, prefer_const_constructors_in_immutables, use_key_in_widget_constructors
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -10,8 +10,9 @@ class UpdateDetails extends StatefulWidget {
   final String lastName;
   final String phoneNumber;
   final String currentHospital;
+  final String description;
   UpdateDetails(this.userId, this.firstName, this.lastName, this.phoneNumber,
-      this.currentHospital);
+      this.currentHospital, this.description);
 
   @override
   State<UpdateDetails> createState() => _UpdateDetailsState();
@@ -24,6 +25,7 @@ class _UpdateDetailsState extends State<UpdateDetails> {
     TextEditingController lastnamecontroler = TextEditingController();
     TextEditingController addresscontroler = TextEditingController();
     TextEditingController phonenumbercontroler = TextEditingController();
+    TextEditingController descriptioncontroler = TextEditingController();
 
     firstnamecontroler.text = widget.firstName;
     lastnamecontroler.text = widget.lastName;
@@ -47,7 +49,8 @@ class _UpdateDetailsState extends State<UpdateDetails> {
             "First Name": firstnamecontroler.text,
             "Last Name": lastnamecontroler.text,
             "Current Hospital": addresscontroler.text,
-            "Phone Number": phonenumbercontroler.text
+            "Phone Number": phonenumbercontroler.text,
+            "Description": descriptioncontroler.text
           },
         );
 
@@ -89,6 +92,10 @@ class _UpdateDetailsState extends State<UpdateDetails> {
               height: 10,
             ),
             textfields(phonenumbercontroler, "Phone Number"),
+            SizedBox(
+              height: 10,
+            ),
+            textfields(descriptioncontroler, "Description"),
             SizedBox(
               height: 10,
             ),
