@@ -28,26 +28,39 @@ class _profileState extends State<profile> {
   var imageFile;
 
   var imageUrl;
-  var croppedImage;
 
   _pickImage(String imagename, ImageSource source) async {
     var pictureFile =
         await ImagePicker.platform.getImageFromSource(source: source);
 
-    setState(() {
-      imageFile = File(pictureFile!.path);
-    });
     final firebasestorage = FirebaseStorage.instance;
 
-    if (imageFile != null) {
-      // croppedImage = await ImageCropper.platform.cropImage(
-      //   sourcePath: imageFile,
-      //   aspectRatio: CropAspectRatio(ratioX: 1, ratioY: 1),
-      //   compressQuality: 100,
-      //   maxHeight: 700,
-      //   maxWidth: 700,
-      //   compressFormat: ImageCompressFormat.jpg,
-      // );
+    if (pictureFile!.path.isNotEmpty) {
+      showDialog(
+          context: context,
+          builder: (context) {
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          });
+      var croppedImage = await ImageCropper.platform.cropImage(
+        sourcePath: pictureFile.path,
+        aspectRatio: CropAspectRatio(ratioX: 1, ratioY: 1),
+        uiSettings: [
+          AndroidUiSettings(
+              toolbarColor: Colors.teal,
+              toolbarWidgetColor: Colors.white,
+              initAspectRatio: CropAspectRatioPreset.original,
+              lockAspectRatio: false)
+        ],
+        compressQuality: 100,
+        maxHeight: 700,
+        maxWidth: 700,
+        compressFormat: ImageCompressFormat.jpg,
+      );
+      setState(() {
+        imageFile = File(croppedImage!.path);
+      });
       //Upload to Firebase
       var snapshot = await firebasestorage
           .ref()
@@ -61,6 +74,8 @@ class _profileState extends State<profile> {
           .collection("Doctor")
           .doc(FirebaseAuth.instance.currentUser?.uid)
           .update({"Profile Photo": imageUrl});
+
+      Navigator.pop(context);
     } else {
       print('No Image Path Received');
     }
