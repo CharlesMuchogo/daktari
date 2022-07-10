@@ -276,11 +276,31 @@ class _profileState extends State<profile> {
                   ),
                   UserInfo("Description", snapshot.data?.get("Description"),
                       Icons.description_outlined),
+                  InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => UpdateDetails(
+                            FirebaseAuth.instance.currentUser!.uid,
+                            snapshot.data?.get("First Name"),
+                            snapshot.data?.get("Last Name"),
+                            snapshot.data?.get("Phone Number"),
+                            snapshot.data?.get("Current Hospital"),
+                            snapshot.data?.get("Description"),
+                          ),
+                        ),
+                      );
+                    },
+                    child: UserInfo("Schedule", "click to edit your schedule",
+                        Icons.schedule_outlined),
+                  ),
 
                   Divider(
                     color: Colors.black,
                     thickness: 1,
                   ),
+
                   // ListTile(
                   //   leading: Icon(
                   //     Icons.dark_mode,
