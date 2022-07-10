@@ -1,5 +1,6 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, prefer_final_fields
 
+import 'package:daktari/pages/resetpassword.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -118,7 +119,8 @@ Widget loginfunctionality(BuildContext context, Function navigation) {
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => Signup()),
+                            MaterialPageRoute(
+                                builder: (context) => ResetPassword()),
                           );
                         },
                       ),
