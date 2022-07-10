@@ -13,53 +13,85 @@ class Search extends StatefulWidget {
 
 class _SearchState extends State<Search> {
   TextEditingController searchdoctorcontroler = TextEditingController();
-  //use  searchdoctorcontroler.text to retrieve contents of the searchbox
+
+  void _printLatestValue() {
+    print("$searchdoctorcontroler.text");
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    searchdoctorcontroler.addListener(_printLatestValue);
+  }
+
+  @override
+  void dispose() {
+    searchdoctorcontroler.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        title: Text("Search For your Appointments"),
+        title: Text("Search Appointments"),
         centerTitle: true,
       ),
       body: Padding(
         padding: const EdgeInsets.fromLTRB(0, 50, 0, 0),
-        child: Center(
-          child:
-              Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
-            Container(
-              padding: EdgeInsets.fromLTRB(115, 0, 0, 0),
-              height: 39,
-              width: 368,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.all(
-                  Radius.circular(30),
-                ),
-                color: Color.fromRGBO(245, 242, 242, 10),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey,
-                    offset: Offset(0.0, 1.0), //(x,y)
-                    blurRadius: 6.0,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Center(
+                  child: Container(
+                    height: 39,
+                    width: 300,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.all(
+                        Radius.circular(30),
+                      ),
+                      color: Color.fromRGBO(245, 242, 242, 10),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey,
+                          offset: Offset(0.0, 1.0), //(x,y)
+                          blurRadius: 6.0,
+                        ),
+                      ],
+                    ),
+                    child: SizedBox(
+                      width: 300,
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 30, right: 30),
+                        child: TextField(
+                          controller: searchdoctorcontroler,
+                          decoration: InputDecoration(
+                              border: InputBorder.none,
+                              //labelText: 'Enter Name',
+                              hintText: 'Search for a appointment'),
+                        ),
+                      ),
+                    ),
                   ),
-                ],
-              ),
-              child: InkWell(
-                child: TextField(
-                  controller: searchdoctorcontroler,
-                  decoration: InputDecoration(
-                    border: InputBorder.none,
-                    //labelText: 'Enter Name',
-                    hintText: 'Search through appointments',
-                  ),
                 ),
-                onTap: () {
-                  searchinfo(searchdoctorcontroler.text);
-                },
-              ),
+                IconButton(
+                  onPressed: () {
+                    setState(() {
+                      searchdoctorcontroler.text =
+                          searchdoctorcontroler.text.trim();
+                    });
+                  },
+                  icon: Icon(Icons.search),
+                )
+              ],
             ),
-          ]),
+            searchinfo(searchdoctorcontroler.text)
+          ],
         ),
       ),
     );
@@ -90,77 +122,53 @@ Widget searchinfo(String controler) {
           );
         }
 
-        return Container(
-          child: Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  SizedBox(
-                    height: 630,
-                    child: ListView.builder(
-                      itemCount: snapshot.data!.docs.length,
-                      scrollDirection: Axis.vertical,
-                      itemBuilder: (context, index) => Container(
-                        height: 100,
-                        width: 200,
-                        margin: EdgeInsets.all(15),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.all(
-                            Radius.circular(15),
-                          ),
-                          color: Color.fromRGBO(245, 242, 242, 10),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey,
-                              offset: Offset(0.0, 1.0), //(x,y)
-                              blurRadius: 6.0,
-                            ),
-                          ],
+        return SingleChildScrollView(
+          child: Center(
+            child: Column(
+              children: [
+                ...(snapshot.data!.docs
+                    .where(
+                  (QueryDocumentSnapshot<Object?> element) => element["Date"]
+                      .toString()
+                      .toLowerCase()
+                      .contains(controler.toLowerCase()),
+                )
+                    .map(
+                  (QueryDocumentSnapshot<Object?> data) {
+                    return Container(
+                      width: MediaQuery.of(context).size.width * 0.9,
+                      height: MediaQuery.of(context).size.height * 0.1,
+                      margin: EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.all(
+                          Radius.circular(10),
                         ),
-                        child: Center(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: [
-                              CircleAvatar(
-                                backgroundImage: NetworkImage(snapshot
-                                    .data!.docs[index]
-                                    .get("Profile Photo")),
-                                radius: 32.0,
-                              ),
-                              Column(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  Text(
-                                    (snapshot.data!.docs[index]
-                                        .get("First Name")),
-                                    style: TextStyle(
-                                      color: Colors.black,
-                                      fontSize: 18,
-                                    ),
-                                  ),
-                                  Text(
-                                    snapshot.data!.docs[index].get("Date"),
-                                    style: TextStyle(
-                                      color: Color.fromARGB(255, 21, 121, 91),
-                                      fontSize: 15,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              Icon(
-                                Icons.more_vert_sharp,
-                                color: Colors.teal,
-                              )
-                            ],
+                        color: Color.fromRGBO(245, 242, 242, 20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey,
+                            offset: Offset(0.0, 1.0),
+                            blurRadius: 6.0,
                           ),
+                        ],
+                      ),
+                      child: InkWell(
+                        // onTap: () {
+                        //   Navigator.push(
+                        //     context,
+                        //     MaterialPageRoute(
+                        //       builder: (context) =>
+                        //     ),
+                        //   );
+                        // },
+                        child: ListTile(
+                          title: Text(data["Date"]),
                         ),
                       ),
-                    ),
-                  ),
-                ],
-              ),
+                    );
+                  },
+                )),
+              ],
             ),
           ),
         );
