@@ -42,6 +42,19 @@ dependencies:
   firebase_storage: ^10.2.18
   image_picker: ^0.8.5+3
   image_cropper: ^2.0.3
+  flutter_launcher_icons: ^0.9.3
+  flutter_native_splash: ^2.2.4
+  
+
+flutter_native_splash:
+ 
+  color: "#008080"
+  image: assets/images/appicon.png
+
+flutter_icons:
+  image_path: "assets/images/appicon.png" 
+  android: true
+  ios: true
 
 dev_dependencies:
   flutter_test:
