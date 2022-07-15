@@ -1,6 +1,7 @@
 // ignore_for_file: prefer_const_literals_to_create_immutables, prefer_const_constructors
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:daktari/pages/home.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -13,17 +14,6 @@ class Search extends StatefulWidget {
 
 class _SearchState extends State<Search> {
   TextEditingController searchdoctorcontroler = TextEditingController();
-
-  void _printLatestValue() {
-    print("$searchdoctorcontroler.text");
-  }
-
-  @override
-  void initState() {
-    super.initState();
-
-    searchdoctorcontroler.addListener(_printLatestValue);
-  }
 
   @override
   void dispose() {
@@ -90,7 +80,7 @@ class _SearchState extends State<Search> {
                 )
               ],
             ),
-            searchinfo(searchdoctorcontroler.text)
+            Expanded(child: searchinfo(searchdoctorcontroler.text))
           ],
         ),
       ),
@@ -122,55 +112,54 @@ Widget searchinfo(String controler) {
           );
         }
 
-        return SingleChildScrollView(
-          child: Center(
-            child: Column(
-              children: [
-                ...(snapshot.data!.docs
-                    .where(
-                  (QueryDocumentSnapshot<Object?> element) => element["Date"]
-                      .toString()
-                      .toLowerCase()
-                      .contains(controler.toLowerCase()),
-                )
-                    .map(
-                  (QueryDocumentSnapshot<Object?> data) {
-                    return Container(
-                      width: MediaQuery.of(context).size.width * 0.9,
-                      height: MediaQuery.of(context).size.height * 0.1,
-                      margin: EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.all(
-                          Radius.circular(10),
-                        ),
-                        color: Color.fromRGBO(245, 242, 242, 20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey,
-                            offset: Offset(0.0, 1.0),
-                            blurRadius: 6.0,
+        return ListView(
+          shrinkWrap: true,
+          children: [
+            Center(
+              child: Column(
+                children: [
+                  ...(snapshot.data!.docs
+                      .where(
+                    (QueryDocumentSnapshot<Object?> element) => element["Date"]
+                        .toString()
+                        .toLowerCase()
+                        .contains(controler.toLowerCase()),
+                  )
+                      .map(
+                    (QueryDocumentSnapshot<Object?> data) {
+                      return Container(
+                        width: MediaQuery.of(context).size.width * 0.9,
+                        height: MediaQuery.of(context).size.height * 0.15,
+                        margin: EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.all(
+                            Radius.circular(10),
                           ),
-                        ],
-                      ),
-                      child: InkWell(
-                        // onTap: () {
-                        //   Navigator.push(
-                        //     context,
-                        //     MaterialPageRoute(
-                        //       builder: (context) =>
-                        //     ),
-                        //   );
-                        // },
-                        child: ListTile(
-                          title: Text(data["Date"]),
+                          color: Color.fromRGBO(245, 242, 242, 20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey,
+                              offset: Offset(0.0, 1.0),
+                              blurRadius: 6.0,
+                            ),
+                          ],
                         ),
-                      ),
-                    );
-                  },
-                )),
-              ],
+                        child: infocards(
+                            context,
+                            data["Date"],
+                            data["Patient Id"],
+                            data["Time"],
+                            data["Status"],
+                            data["Time"],
+                            data["Consultation"],
+                            data.id),
+                      );
+                    },
+                  )),
+                ],
+              ),
             ),
-          ),
+          ],
         );
       });
 }

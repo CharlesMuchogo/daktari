@@ -13,31 +13,46 @@ class login extends StatefulWidget {
 
 final Future<FirebaseApp> initialize = Firebase.initializeApp();
 
+TextEditingController emailcontroler = TextEditingController();
+TextEditingController passwordcontroler = TextEditingController();
+
 class _loginState extends State<login> {
-  int _selectedPageIndex = 0;
-
-  int navigateToSignup() {
-    setState(() {
-      _selectedPageIndex = 1;
-    });
-    return _selectedPageIndex;
-  }
-
   @override
   Widget build(BuildContext context) {
-    List<Map<String, Widget>> widgetList = [
-      {'page': loginfunctionality(context, navigateToSignup)},
-      {'page': Signup()}
-    ];
-
-    return Scaffold(body: widgetList[_selectedPageIndex]['page']);
+    return Scaffold(body: loginfunctionality(context));
   }
 }
 
-Widget loginfunctionality(BuildContext context, Function navigation) {
+Widget loginfunctionality(BuildContext context) {
+  Future login() async {
+    try {
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: emailcontroler.text.toLowerCase().trim(),
+          password: passwordcontroler.text.trim());
+    } on FirebaseAuthException catch (e) {
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text("Error!"),
+            content: Text(
+              e.message.toString(),
+            ),
+            actions: [
+              MaterialButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text("Okay"))
+            ],
+          );
+        },
+      );
+    }
+  }
+
   double heightOfDevice = MediaQuery.of(context).size.height;
-  TextEditingController emailcontroler = TextEditingController();
-  TextEditingController passwordcontroler = TextEditingController();
+
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   bool waiting = false;
@@ -47,19 +62,6 @@ Widget loginfunctionality(BuildContext context, Function navigation) {
       context,
       MaterialPageRoute(builder: (context) => Signup()),
     );
-  }
-
-  void login() {
-    if (ConnectionState.waiting == true) {
-      waiting = true;
-    }
-    try {
-      _auth.signInWithEmailAndPassword(
-          email: emailcontroler.text.toLowerCase().trim(),
-          password: passwordcontroler.text.trim());
-    } catch (e) {
-      print(e);
-    }
   }
 
   return Scaffold(
@@ -90,7 +92,7 @@ Widget loginfunctionality(BuildContext context, Function navigation) {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       logo(
-                        "daktari",
+                        "Daktari",
                         32,
                         Colors.teal,
                       ),
@@ -134,10 +136,10 @@ Widget loginfunctionality(BuildContext context, Function navigation) {
                             ? CircularProgressIndicator()
                             : ElevatedButton(
                                 onPressed: login,
-                                child: Text("Login"),
                                 style: ElevatedButton.styleFrom(
                                   primary: Colors.teal,
                                 ),
+                                child: Text("Login"),
                               ),
                       ),
                       SizedBox(

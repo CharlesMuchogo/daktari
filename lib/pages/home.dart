@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_const_constructors, unnecessary_new, prefer_const_literals_to_create_immutables
+// ignore_for_file: prefer_const_constructors, unnecessary_new, prefer_const_literals_to_create_immutables, prefer_interpolation_to_compose_strings, camel_case_types
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:daktari/pages/appointment.dart';
@@ -13,6 +13,27 @@ class home extends StatefulWidget {
 }
 
 class _homeState extends State<home> {
+  DateTime deadline = DateTime.now().subtract(Duration(minutes: 30));
+
+  // addtoTreatmentHistory() {
+  //   StreamBuilder(
+  //     stream: FirebaseFirestore.instance
+  //         .collection("Doctor")
+  //         .doc(FirebaseAuth.instance.currentUser!.uid)
+  //         .collection("My appointments")
+  //         .where("Time", isGreaterThan: deadline)
+  //         .snapshots(),
+  //     builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+  //       if (!snapshot.hasData) {
+  //         return Center(
+  //           child: CircularProgressIndicator(),
+  //         );
+  //       }
+
+  //     },
+  //   );
+  // }
+
   @override
   Widget build(BuildContext context) {
     double heightOfDevice = MediaQuery.of(context).size.height;
@@ -52,17 +73,21 @@ class _homeState extends State<home> {
                   return 'Good Evening';
                 }
 
-                return Container(
-                  height: heightOfDevice * 0.2,
-                  width: double.infinity,
-                  color: Colors.teal,
-                  child: Center(
-                    child: Text(
-                      greeting() + ", Dr. " + snapshot.data?.get("First Name"),
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold),
+                return SingleChildScrollView(
+                  child: Container(
+                    height: heightOfDevice * 0.2,
+                    width: double.infinity,
+                    color: Colors.teal,
+                    child: Center(
+                      child: Text(
+                        greeting() +
+                            ", Dr. " +
+                            snapshot.data?.get("First Name"),
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold),
+                      ),
                     ),
                   ),
                 );
@@ -120,7 +145,7 @@ Widget upcommingAppointmentCard(BuildContext context) {
           .collection("Doctor")
           .doc(FirebaseAuth.instance.currentUser!.uid)
           .collection("My appointments")
-          .orderBy("Date", descending: true)
+          .orderBy("Date", descending: false)
           .snapshots(),
       builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
         if (!snapshot.hasData) {
@@ -139,56 +164,58 @@ Widget upcommingAppointmentCard(BuildContext context) {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              SizedBox(
-                height: 700,
-                child: ListView.builder(
-                  itemCount: snapshot.data!.docs.length,
-                  scrollDirection: Axis.vertical,
-                  itemBuilder: (context, index) => Container(
-                    height: height * 0.15,
-                    margin: EdgeInsets.only(
-                        top: 15, bottom: 15, left: 25, right: 25),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.all(
-                        Radius.circular(5),
-                      ),
-                      color: Color.fromRGBO(245, 242, 242, 20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey,
-                          offset: Offset(0.0, 1.0), //(x,y)
-                          blurRadius: 6.0,
+              SingleChildScrollView(
+                child: SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.631,
+                  child: ListView.builder(
+                    itemCount: snapshot.data!.docs.length,
+                    scrollDirection: Axis.vertical,
+                    itemBuilder: (context, index) => Container(
+                      height: height * 0.15,
+                      margin: EdgeInsets.only(
+                          top: 15, bottom: 15, left: 25, right: 25),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.all(
+                          Radius.circular(5),
                         ),
-                      ],
-                    ),
-                    child: Center(
-                      child: InkWell(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => AppointmentPage(
-                                snapshot.data!.docs[index].id,
-                                snapshot.data!.docs[index]["Patient Id"],
-                                snapshot.data!.docs[index]["Date"],
-                                snapshot.data!.docs[index]["Consultation"],
-                                snapshot.data!.docs[index]["Time"],
-                                snapshot.data!.docs[index]["Address"],
-                                snapshot.data!.docs[index]["Doctor Name"],
-                                snapshot.data!.docs[index]["Status"],
+                        color: Color.fromRGBO(245, 242, 242, 20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey,
+                            offset: Offset(0.0, 1.0), //(x,y)
+                            blurRadius: 6.0,
+                          ),
+                        ],
+                      ),
+                      child: Center(
+                        child: InkWell(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => AppointmentPage(
+                                  snapshot.data!.docs[index].id,
+                                  snapshot.data!.docs[index]["Patient Id"],
+                                  snapshot.data!.docs[index]["Date"],
+                                  snapshot.data!.docs[index]["Consultation"],
+                                  snapshot.data!.docs[index]["Time"],
+                                  snapshot.data!.docs[index]["Address"],
+                                  snapshot.data!.docs[index]["Doctor Name"],
+                                  snapshot.data!.docs[index]["Status"],
+                                ),
                               ),
-                            ),
-                          ); // navigate to Appointments page
-                        },
-                        child: infocards(
-                          context,
-                          snapshot.data!.docs[index].get("Date"),
-                          snapshot.data!.docs[index].get("Patient Id"),
-                          snapshot.data!.docs[index].get("Time"),
-                          snapshot.data!.docs[index].get("Status"),
-                          snapshot.data!.docs[index]["Address"],
-                          snapshot.data!.docs[index]["Consultation"],
-                          snapshot.data!.docs[index].id,
+                            ); // navigate to Appointments page
+                          },
+                          child: infocards(
+                            context,
+                            snapshot.data!.docs[index].get("Date"),
+                            snapshot.data!.docs[index].get("Patient Id"),
+                            snapshot.data!.docs[index].get("Time"),
+                            snapshot.data!.docs[index].get("Status"),
+                            snapshot.data!.docs[index]["Address"],
+                            snapshot.data!.docs[index]["Consultation"],
+                            snapshot.data!.docs[index].id,
+                          ),
                         ),
                       ),
                     ),

@@ -3,6 +3,7 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:daktari/pages/myschedule.dart';
 import 'package:daktari/pages/updatedetails.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -84,7 +85,7 @@ class _profileState extends State<profile> {
   Widget displayImage(String profileUrl) {
     return CircleAvatar(
       backgroundImage: NetworkImage(profileUrl),
-      radius: 70,
+      radius: 85,
     );
   }
 
@@ -183,26 +184,31 @@ class _profileState extends State<profile> {
                   SizedBox(
                     height: 25,
                   ),
-                  Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                    SizedBox(
-                      width: 25,
-                    ),
-                    displayImage(snapshot.data?.get("Profile Photo")),
-                    SizedBox(
-                      width: 10,
-                    ),
-                    InkWell(
-                      onTap: () {
-                        imagepickerdialogue(
-                            context, snapshot.data?.get("Email"));
-                      },
-                      child: Icon(
-                        Icons.camera_alt_outlined,
-                        size: 30,
-                        color: Colors.grey[700],
-                      ),
-                    ),
-                  ]),
+                  Stack(
+                    children: [
+                      displayImage(snapshot.data?.get("Profile Photo")),
+                      Container(
+                        margin: EdgeInsets.only(
+                            left: MediaQuery.of(context).size.width * 0.28,
+                            top: MediaQuery.of(context).size.height * 0.125),
+                        child: CircleAvatar(
+                          backgroundColor: Colors.teal,
+                          radius: 25,
+                          child: InkWell(
+                            onTap: () {
+                              imagepickerdialogue(
+                                  context, snapshot.data?.get("Email"));
+                            },
+                            child: Icon(
+                              Icons.camera_alt_outlined,
+                              size: 25,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      )
+                    ],
+                  ),
                   SizedBox(
                     height: 10,
                   ),
@@ -276,25 +282,16 @@ class _profileState extends State<profile> {
                   ),
                   UserInfo("Description", snapshot.data?.get("Description"),
                       Icons.description_outlined),
-                  InkWell(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => UpdateDetails(
-                            FirebaseAuth.instance.currentUser!.uid,
-                            snapshot.data?.get("First Name"),
-                            snapshot.data?.get("Last Name"),
-                            snapshot.data?.get("Phone Number"),
-                            snapshot.data?.get("Current Hospital"),
-                            snapshot.data?.get("Description"),
-                          ),
-                        ),
-                      );
-                    },
-                    child: UserInfo("Schedule", "click to edit your schedule",
-                        Icons.schedule_outlined),
-                  ),
+                  // InkWell(
+                  //   onTap: () {
+                  //     Navigator.push(
+                  //       context,
+                  //       MaterialPageRoute(builder: (context) => MySchedule()),
+                  //     );
+                  //   },
+                  //   child: UserInfo("Schedule", "click to edit your schedule",
+                  //       Icons.schedule_outlined),
+                  // ),
 
                   Divider(
                     color: Colors.black,

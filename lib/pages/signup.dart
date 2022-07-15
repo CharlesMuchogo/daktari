@@ -1,5 +1,6 @@
-// ignore_for_file: prefer_const_constructors
+// ignore_for_file: prefer_const_constructors, sort_child_properties_last
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
@@ -19,22 +20,59 @@ class Signup extends StatefulWidget {
 class _SignupState extends State<Signup> {
   final Future<FirebaseApp> _initialization = Firebase.initializeApp();
   final _formKey = GlobalKey<FormState>();
+  var selectedCategory;
+  TextEditingController firstNamecontroler = TextEditingController();
+  TextEditingController lastNamecontroler = TextEditingController();
+  TextEditingController emailcontroler = TextEditingController();
+  TextEditingController phoneNumbercontroler = TextEditingController();
+  TextEditingController passwordcontroler = TextEditingController();
+  TextEditingController confirmpasswordcontroler = TextEditingController();
+  TextEditingController licensenumbercontroler = TextEditingController();
+  TextEditingController currentHospitalcontroler = TextEditingController();
 
-  @override
-  Widget build(BuildContext context) {
-    TextEditingController firstNamecontroler = TextEditingController();
-    TextEditingController lastNamecontroler = TextEditingController();
-    TextEditingController emailcontroler = TextEditingController();
-    TextEditingController phoneNumbercontroler = TextEditingController();
-    TextEditingController passwordcontroler = TextEditingController();
-    TextEditingController confirmpasswordcontroler = TextEditingController();
-    TextEditingController licensenumbercontroler = TextEditingController();
-    TextEditingController currentHospitalcontroler = TextEditingController();
-
-    double heightOfDevice = MediaQuery.of(context).size.height;
-    bool isLoading = false;
-
-    void _input() async {
+  Future _input() async {
+    if ((firstNamecontroler.text.trim().isEmpty ||
+        lastNamecontroler.text.trim().isEmpty ||
+        emailcontroler.text.trim().isEmpty ||
+        phoneNumbercontroler.text.trim().isEmpty ||
+        passwordcontroler.text.trim().isEmpty ||
+        confirmpasswordcontroler.text.trim().isEmpty ||
+        licensenumbercontroler.text.trim().isEmpty ||
+        currentHospitalcontroler.text.isEmpty ||
+        selectedCategory == null)) {
+      return showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: Text("Error !"),
+              content: Text("Fill in all the details"),
+              actions: [
+                MaterialButton(
+                    child: Text("Okay"),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    })
+              ],
+            );
+          });
+    } else {
+      if (passwordcontroler.text != confirmpasswordcontroler.text) {
+        return showDialog(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                title: Text("Error !"),
+                content: Text("Passwords do not match"),
+                actions: [
+                  MaterialButton(
+                      child: Text("Okay"),
+                      onPressed: () {
+                        Navigator.pop(context);
+                      })
+                ],
+              );
+            });
+      }
       await context.read<AuthenticationService>().signUp(
           email: emailcontroler.text.toLowerCase().trim(),
           password: passwordcontroler.text.trim());
@@ -47,10 +85,17 @@ class _SignupState extends State<Signup> {
           emailcontroler.text.trim(),
           phoneNumbercontroler.text,
           licensenumbercontroler.text.trim(),
-          currentHospitalcontroler.text);
+          currentHospitalcontroler.text,
+          selectedCategory.toString());
 
       return Navigator.of(context).pop();
     }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    double heightOfDevice = MediaQuery.of(context).size.height;
+    bool isLoading = false;
 
     return Scaffold(
       body: FutureBuilder<Object>(
@@ -72,9 +117,6 @@ class _SignupState extends State<Signup> {
                 ),
               );
             }
-            List<String> gender = ["Male", "Female", "Non-binary"];
-
-            String dropdownValue = "Male";
 
             return Column(
               children: [
@@ -122,27 +164,6 @@ class _SignupState extends State<Signup> {
                                     SizedBox(
                                       height: 10,
                                     ),
-                                    ListTile(
-                                      title: Text("Select your gender"),
-                                      trailing: DropdownButton(
-                                        value: dropdownValue,
-                                        onChanged: (value) {
-                                          setState(
-                                            () {
-                                              dropdownValue = value.toString();
-                                            },
-                                          );
-                                        },
-                                        items: gender.map(
-                                          (String items) {
-                                            return DropdownMenuItem(
-                                              value: items,
-                                              child: Text(items),
-                                            );
-                                          },
-                                        ).toList(),
-                                      ),
-                                    ),
                                     textfields(licensenumbercontroler,
                                         "Enter Your Licence number"),
                                     SizedBox(
@@ -150,12 +171,67 @@ class _SignupState extends State<Signup> {
                                     ),
                                     textfields(currentHospitalcontroler,
                                         "Enter your current hospital"),
-
                                     SizedBox(
                                       height: 10,
                                     ),
+                                    StreamBuilder(
+                                        stream: FirebaseFirestore.instance
+                                            .collection("Doctor Cartegories")
+                                            .snapshots(),
+                                        builder: (context,
+                                            AsyncSnapshot<QuerySnapshot>
+                                                snapshot) {
+                                          if (!snapshot.hasData) {
+                                            return Center(
+                                              child:
+                                                  CircularProgressIndicator(),
+                                            );
+                                          }
 
-                                    /// add sex and specialty
+                                          List<DropdownMenuItem>
+                                              doctorCategories = [];
+
+                                          for (int i = 0;
+                                              i < snapshot.data!.docs.length;
+                                              i++) {
+                                            DocumentSnapshot snap =
+                                                snapshot.data!.docs[i];
+                                            doctorCategories
+                                                .add(DropdownMenuItem(
+                                              child: Text(snap.id),
+                                              value: snap.id,
+                                            ));
+                                          }
+
+                                          return Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Text(
+                                                "Select Your Specialty",
+                                                style: TextStyle(fontSize: 17),
+                                              ),
+                                              SizedBox(width: 50.0),
+                                              DropdownButton(
+                                                items: doctorCategories,
+                                                onChanged: (value) {
+                                                  setState(() {
+                                                    selectedCategory =
+                                                        value.toString();
+                                                  });
+                                                },
+                                                value: selectedCategory,
+                                                isExpanded: false,
+                                                hint: Text(
+                                                  "Choose your specialty",
+                                                ),
+                                              ),
+                                            ],
+                                          );
+                                        }),
+                                    SizedBox(
+                                      height: 10,
+                                    ),
                                     passwordFields(
                                         passwordcontroler, "Create password"),
                                     SizedBox(

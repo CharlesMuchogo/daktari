@@ -25,7 +25,7 @@ class _BottomBarScreenState extends State<BottomBarScreen> {
         'page': Search(),
       },
       {
-        'page': history(),
+        'page': History(),
       },
       {
         'page': profile(),
