@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, prefer_final_fields
+// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, prefer_final_fields, use_build_context_synchronously
 
 import 'package:daktari/pages/resetpassword.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -25,11 +25,18 @@ class _loginState extends State<login> {
 
 Widget loginfunctionality(BuildContext context) {
   Future login() async {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return Center(child: CircularProgressIndicator());
+        });
     try {
       await FirebaseAuth.instance.signInWithEmailAndPassword(
           email: emailcontroler.text.toLowerCase().trim(),
           password: passwordcontroler.text.trim());
+      Navigator.pop(context);
     } on FirebaseAuthException catch (e) {
+      Navigator.pop(context);
       showDialog(
         context: context,
         builder: (context) {
@@ -132,15 +139,13 @@ Widget loginfunctionality(BuildContext context) {
                       SizedBox(
                         height: 42,
                         width: 196,
-                        child: waiting
-                            ? CircularProgressIndicator()
-                            : ElevatedButton(
-                                onPressed: login,
-                                style: ElevatedButton.styleFrom(
-                                  primary: Colors.teal,
-                                ),
-                                child: Text("Login"),
-                              ),
+                        child: ElevatedButton(
+                          onPressed: login,
+                          style: ElevatedButton.styleFrom(
+                            primary: Colors.teal,
+                          ),
+                          child: Text("Login"),
+                        ),
                       ),
                       SizedBox(
                         height: 35,
@@ -183,6 +188,7 @@ Widget textfields(
   if (placeholder == "Enter your password") {
     return TextFormField(
       obscureText: true,
+      keyboardType: TextInputType.name,
       controller: textfieldcontroler,
       decoration: InputDecoration(
         labelText: placeholder,
@@ -208,6 +214,7 @@ Widget textfields(
     );
   } else {
     return TextFormField(
+      keyboardType: TextInputType.emailAddress,
       controller: textfieldcontroler,
       decoration: InputDecoration(
         labelText: placeholder,

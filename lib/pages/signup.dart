@@ -144,39 +144,51 @@ class _SignupState extends State<Signup> {
                                 padding: EdgeInsets.all(20),
                                 child: Column(
                                   children: [
-                                    textfields(firstNamecontroler,
-                                        "Enter your first name"),
-                                    SizedBox(
-                                      height: 10,
-                                    ),
-                                    textfields(lastNamecontroler,
-                                        "Enter your last name"),
+                                    textfields(
+                                        firstNamecontroler,
+                                        "Enter your first name",
+                                        TextInputType.name),
                                     SizedBox(
                                       height: 10,
                                     ),
                                     textfields(
-                                        emailcontroler, "Enter your email"),
+                                        lastNamecontroler,
+                                        "Enter your last name",
+                                        TextInputType.name),
                                     SizedBox(
                                       height: 10,
                                     ),
-                                    textfields(phoneNumbercontroler,
-                                        "Enter phone number"),
+                                    textfields(
+                                        emailcontroler,
+                                        "Enter your email",
+                                        TextInputType.emailAddress),
                                     SizedBox(
                                       height: 10,
                                     ),
-                                    textfields(licensenumbercontroler,
-                                        "Enter Your Licence number"),
+                                    textfields(
+                                        phoneNumbercontroler,
+                                        "Enter phone number",
+                                        TextInputType.phone),
                                     SizedBox(
                                       height: 10,
                                     ),
-                                    textfields(currentHospitalcontroler,
-                                        "Enter your current hospital"),
+                                    textfields(
+                                        licensenumbercontroler,
+                                        "Enter Your Licence number",
+                                        TextInputType.name),
+                                    SizedBox(
+                                      height: 10,
+                                    ),
+                                    textfields(
+                                        currentHospitalcontroler,
+                                        "Enter your current hospital",
+                                        TextInputType.name),
                                     SizedBox(
                                       height: 10,
                                     ),
                                     StreamBuilder(
                                         stream: FirebaseFirestore.instance
-                                            .collection("Doctor Cartegories")
+                                            .collection("Doctor Categoty")
                                             .snapshots(),
                                         builder: (context,
                                             AsyncSnapshot<QuerySnapshot>
@@ -274,12 +286,11 @@ class _SignupState extends State<Signup> {
   }
 }
 
-Widget textfields(
-  TextEditingController textfieldcontroler,
-  String placeholder,
-) {
+Widget textfields(TextEditingController textfieldcontroler, String placeholder,
+    TextInputType keyboardtype) {
   return TextFormField(
     controller: textfieldcontroler,
+    keyboardType: keyboardtype,
     decoration: InputDecoration(
       labelText: placeholder,
       //hintText: placeholder

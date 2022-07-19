@@ -1,9 +1,9 @@
-// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
+// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, use_build_context_synchronously, avoid_print, prefer_typing_uninitialized_variables, camel_case_types, invalid_use_of_visible_for_testing_member, use_key_in_widget_constructors, non_constant_identifier_names
 
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:daktari/pages/myschedule.dart';
+
 import 'package:daktari/pages/updatedetails.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -30,7 +30,7 @@ class _profileState extends State<profile> {
 
   var imageUrl;
 
-  _pickImage(String imagename, ImageSource source) async {
+  _pickImage(String imagename, ImageSource source, String specialty) async {
     var pictureFile =
         await ImagePicker.platform.getImageFromSource(source: source);
 
@@ -71,9 +71,17 @@ class _profileState extends State<profile> {
       setState(() {
         imageUrl = downloadUrl;
       });
+
       FirebaseFirestore.instance
           .collection("Doctor")
           .doc(FirebaseAuth.instance.currentUser?.uid)
+          .update({"Profile Photo": imageUrl});
+
+      FirebaseFirestore.instance
+          .collection("Doctor Cartegories")
+          .doc(specialty)
+          .collection("Doctors")
+          .doc(FirebaseAuth.instance.currentUser!.uid)
           .update({"Profile Photo": imageUrl});
 
       Navigator.pop(context);
@@ -89,7 +97,8 @@ class _profileState extends State<profile> {
     );
   }
 
-  Future imagepickerdialogue(BuildContext context, String imageName) {
+  Future imagepickerdialogue(
+      BuildContext context, String imageName, String specialty) {
     return showDialog(
       context: context,
       builder: (context) {
@@ -100,16 +109,16 @@ class _profileState extends State<profile> {
               children: [
                 InkWell(
                   onTap: () {
-                    Navigator.of(context)
-                        .pop(_pickImage(imageName, ImageSource.gallery));
+                    Navigator.of(context).pop(
+                        _pickImage(imageName, ImageSource.gallery, specialty));
                   },
                   child: Text("Gallery"),
                 ),
                 Padding(padding: EdgeInsets.all(8)),
                 InkWell(
                   onTap: () {
-                    Navigator.of(context)
-                        .pop(_pickImage(imageName, ImageSource.camera));
+                    Navigator.of(context).pop(
+                        _pickImage(imageName, ImageSource.camera, specialty));
                   },
                   child: Text("Camera"),
                 )
@@ -153,7 +162,23 @@ class _profileState extends State<profile> {
     try {
       _auth.signOut();
     } on FirebaseAuth catch (e) {
-      print(e);
+      showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: Text("Error!"),
+              content: Text(
+                e.toString(),
+              ),
+              actions: [
+                MaterialButton(
+                    child: Text("Okay"),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    })
+              ],
+            );
+          });
     }
   }
 
@@ -197,7 +222,9 @@ class _profileState extends State<profile> {
                           child: InkWell(
                             onTap: () {
                               imagepickerdialogue(
-                                  context, snapshot.data?.get("Email"));
+                                  context,
+                                  snapshot.data?.get("Email"),
+                                  snapshot.data?.get("Email"));
                             },
                             child: Icon(
                               Icons.camera_alt_outlined,
@@ -249,8 +276,6 @@ class _profileState extends State<profile> {
                   ),
                   Center(
                     child: ElevatedButton(
-                      child: Text("Update your details",
-                          style: TextStyle(color: Colors.black)),
                       style:
                           ElevatedButton.styleFrom(primary: Colors.grey[200]),
                       onPressed: () {
@@ -267,6 +292,8 @@ class _profileState extends State<profile> {
                           ),
                         ); // navigate t
                       },
+                      child: Text("Update your details",
+                          style: TextStyle(color: Colors.black)),
                     ),
                   ),
                   UserInfo("Email", snapshot.data?.get("Email"),

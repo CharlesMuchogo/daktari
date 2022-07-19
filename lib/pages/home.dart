@@ -154,9 +154,15 @@ Widget upcommingAppointmentCard(BuildContext context) {
         if (snapshot.hasError) {
           return Text("An error occured. please try again later");
         }
-        if (snapshot.data!.docs.isEmpty) {
-          Center(
-            child: Text("You do not have any upcoming appointments"),
+        if (snapshot.data!.size <= 0) {
+          return SizedBox(
+            height: MediaQuery.of(context).size.height * 0.65,
+            child: Center(
+              child: Text(
+                "You do not have any upcoming appointments",
+                style: TextStyle(fontSize: 20),
+              ),
+            ),
           );
         }
 

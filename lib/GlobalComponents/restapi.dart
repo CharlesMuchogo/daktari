@@ -36,22 +36,6 @@ class RestApi {
     return "Signup successful";
   }
 
-  Future<void> readData() async {
-    final User? user = _auth.currentUser;
-    final uid = user?.uid;
-    var userDetailsList = [];
-
-    final DocumentSnapshot docs =
-        await _fire.collection("Patient").doc(uid).get();
-
-    String name = docs.get("Email");
-    String phoneNumber = docs.get("Phone Number");
-
-    userDetailsList.add({"Email": name, "Phone Number": phoneNumber});
-
-    return userDetailsList[0];
-  }
-
   Future<String> cancelAppointments(String appointmentId) async {
     try {
       await _fire.collection("Appointment").doc(appointmentId).delete();
