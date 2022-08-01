@@ -98,7 +98,7 @@ class _SignupState extends State<Signup> {
     bool isLoading = false;
 
     return Scaffold(
-      body: FutureBuilder<Object>(
+      body: FutureBuilder(
           future: null,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
