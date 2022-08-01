@@ -7,8 +7,14 @@ class RestApi {
   final FirebaseFirestore _fire = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  Future<String> createData(String firstName, String lastName, String email,
-      String phoneNumber, String license, String curentHospital) async {
+  Future<String> createData(
+      String firstName,
+      String lastName,
+      String email,
+      String phoneNumber,
+      String license,
+      String curentHospital,
+      String specialty) async {
     final User? user = _auth.currentUser;
     final uid = user?.uid;
 
@@ -20,26 +26,14 @@ class RestApi {
         "License Number": license,
         "Current Hospital": curentHospital,
         "Email": email,
-        "Phone Number": phoneNumber
+        "Phone Number": phoneNumber,
+        "Description": "",
+        "specialty": specialty,
+        "Profile Photo":
+            "https://firebasestorage.googleapis.com/v0/b/matibabu-1254d.appspot.com/o/images%2Femptyprofile.png?alt=media&token=288629bd-5959-4bf0-8c92-8b2709c4fbb4",
       },
     );
     return "Signup successful";
-  }
-
-  Future<void> readData() async {
-    final User? user = _auth.currentUser;
-    final uid = user?.uid;
-    var userDetailsList = [];
-
-    final DocumentSnapshot docs =
-        await _fire.collection("Patient").doc(uid).get();
-
-    String name = docs.get("Email");
-    String phoneNumber = docs.get("Phone Number");
-
-    userDetailsList.add({"Email": name, "Phone Number": phoneNumber});
-
-    return userDetailsList[0];
   }
 
   Future<String> cancelAppointments(String appointmentId) async {

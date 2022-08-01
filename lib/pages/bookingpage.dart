@@ -118,7 +118,7 @@ class _BookingsPageState extends State<BookingsPage> {
           ),
           ListTile(
             leading: IconButton(
-              onPressed: (() => _openDatePicker(context)),
+              onPressed: null,
               icon: Icon(Icons.medical_services_outlined),
             ),
             title: Text("Select the type of Appointment"),

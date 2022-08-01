@@ -1,11 +1,11 @@
-// ignore_for_file: prefer_const_constructors, unnecessary_new, prefer_const_literals_to_create_immutables
+// ignore_for_file: prefer_const_constructors, unnecessary_new, prefer_const_literals_to_create_immutables, prefer_interpolation_to_compose_strings, camel_case_types
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:daktari/pages/appointment.dart';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-
-import 'package:daktari/pages/appointment.dart';
-import 'package:daktari/pages/doctor_information.dart';
+import 'package:flutter/rendering.dart';
 
 class home extends StatefulWidget {
   @override
@@ -13,6 +13,27 @@ class home extends StatefulWidget {
 }
 
 class _homeState extends State<home> {
+  DateTime deadline = DateTime.now().subtract(Duration(minutes: 30));
+
+  // addtoTreatmentHistory() {
+  //   StreamBuilder(
+  //     stream: FirebaseFirestore.instance
+  //         .collection("Doctor")
+  //         .doc(FirebaseAuth.instance.currentUser!.uid)
+  //         .collection("My appointments")
+  //         .where("Time", isGreaterThan: deadline)
+  //         .snapshots(),
+  //     builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+  //       if (!snapshot.hasData) {
+  //         return Center(
+  //           child: CircularProgressIndicator(),
+  //         );
+  //       }
+
+  //     },
+  //   );
+  // }
+
   @override
   Widget build(BuildContext context) {
     double heightOfDevice = MediaQuery.of(context).size.height;
@@ -52,17 +73,21 @@ class _homeState extends State<home> {
                   return 'Good Evening';
                 }
 
-                return Container(
-                  height: heightOfDevice / 4,
-                  width: double.infinity,
-                  color: Colors.teal,
-                  child: Center(
-                    child: Text(
-                      greeting() + ", Dr. " + snapshot.data?.get("First Name"),
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold),
+                return SingleChildScrollView(
+                  child: Container(
+                    height: heightOfDevice * 0.2,
+                    width: double.infinity,
+                    color: Colors.teal,
+                    child: Center(
+                      child: Text(
+                        greeting() +
+                            ", Dr. " +
+                            snapshot.data?.get("First Name"),
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold),
+                      ),
                     ),
                   ),
                 );
@@ -80,40 +105,16 @@ class _homeState extends State<home> {
                     ),
                   ),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       SizedBox(
                         height: 33,
                       ),
-                      textInfo('Upcoming appointments'),
+                      Center(child: textInfo('Upcoming appointments')),
                       SizedBox(
                         height: 10,
                       ),
-                      upcomingAppointments(_uid!),
-                      SizedBox(
-                        height: 33,
-                      ),
-                      textInfo('My favorite doctors'),
-                      SizedBox(
-                        height: 10,
-                      ),
-                      InkWell(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => DoctorInfo()),
-                            );
-                          },
-                          child: info()),
-                      SizedBox(
-                        height: 33,
-                      ),
-                      textInfo('Top ratted specialist'),
-                      SizedBox(
-                        height: 10,
-                      ),
-                      info(),
+                      upcommingAppointmentCard(context)
                     ],
                   ),
                 ),
@@ -137,101 +138,29 @@ Widget textInfo(String text) {
   );
 }
 
-Widget info() {
-  return Container(
-    child: SingleChildScrollView(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SizedBox(
-            height: 150,
-            child: ListView.builder(
-              itemCount: 10,
-              scrollDirection: Axis.horizontal,
-              itemBuilder: (context, index) => Container(
-                height: 200,
-                width: 300,
-                margin: EdgeInsets.all(15),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.all(
-                    Radius.circular(5),
-                  ),
-                  color: Color.fromRGBO(245, 242, 242, 20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey,
-                      offset: Offset(0.0, 1.0), //(x,y)
-                      blurRadius: 6.0,
-                    ),
-                  ],
-                ),
-                child: Center(
-                  child: infocards("Charles Muchogo",
-                      'assets/images/profile.jpg', "Gaenacologist"),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    ),
-  );
-}
-
-Widget infocards(String name, String displayPhoto, String doctorSpecialty) {
-  return ListTile(
-    leading: CircleAvatar(
-      backgroundImage: AssetImage(displayPhoto),
-      radius: 32.0,
-    ),
-    title: Text(
-      name,
-      style: TextStyle(
-        color: Colors.black,
-        fontSize: 18,
-      ),
-    ),
-    subtitle: Text(
-      doctorSpecialty,
-      style: TextStyle(
-        color: Color.fromARGB(255, 21, 121, 91),
-        fontSize: 15,
-      ),
-    ),
-    trailing: Icon(
-      Icons.more_vert,
-      color: Color.fromARGB(255, 21, 121, 91),
-    ),
-  );
-}
-
-Widget upcomingAppointments(String _uid) {
+Widget upcommingAppointmentCard(BuildContext context) {
+  double height = MediaQuery.of(context).size.height;
   return StreamBuilder(
       stream: FirebaseFirestore.instance
-          .collection("Appointments")
-          .orderBy("Date")
+          .collection("Doctor")
+          .doc(FirebaseAuth.instance.currentUser!.uid)
+          .collection("My appointments")
+          .orderBy("Date", descending: false)
           .snapshots(),
-      builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+      builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
         if (!snapshot.hasData) {
-          return Container(
-            height: 200,
-            width: 300,
-            child: Center(
-              child: CircularProgressIndicator(),
-            ),
-          );
+          return Center(child: CircularProgressIndicator());
         }
         if (snapshot.hasError) {
-          return Text("Oops. An error occured. Try again later");
+          return Text("An error occured. please try again later");
         }
         if (snapshot.data!.size <= 0) {
           return SizedBox(
-            height: 150,
-            width: 300,
+            height: MediaQuery.of(context).size.height * 0.65,
             child: Center(
               child: Text(
-                "You have no upcomming appointments",
-                style: TextStyle(fontSize: 17),
+                "You do not have any upcoming appointments",
+                style: TextStyle(fontSize: 20),
               ),
             ),
           );
@@ -241,36 +170,59 @@ Widget upcomingAppointments(String _uid) {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              SizedBox(
-                height: 150,
-                child: ListView.builder(
-                  itemCount: snapshot.data?.size,
-                  scrollDirection: Axis.horizontal,
-                  itemBuilder: (context, index) => Container(
-                    height: 200,
-                    width: 300,
-                    margin: EdgeInsets.all(15),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.all(
-                        Radius.circular(5),
-                      ),
-                      color: Color.fromRGBO(245, 242, 242, 20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey,
-                          offset: Offset(0.0, 1.0),
-                          blurRadius: 6.0,
+              SingleChildScrollView(
+                child: SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.631,
+                  child: ListView.builder(
+                    itemCount: snapshot.data!.docs.length,
+                    scrollDirection: Axis.vertical,
+                    itemBuilder: (context, index) => Container(
+                      height: height * 0.15,
+                      margin: EdgeInsets.only(
+                          top: 15, bottom: 15, left: 25, right: 25),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.all(
+                          Radius.circular(5),
                         ),
-                      ],
-                    ),
-                    child: Center(
-                      child: appointmentcards(
-                        context,
-                        snapshot.data!.docs[index]["Time"],
-                        snapshot.data!.docs[index]["Address"],
-                        snapshot.data!.docs[index].id,
-                        snapshot.data!.docs[index]["Date"],
-                        snapshot.data!.docs[index]["Consultation"],
+                        color: Color.fromRGBO(245, 242, 242, 20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey,
+                            offset: Offset(0.0, 1.0), //(x,y)
+                            blurRadius: 6.0,
+                          ),
+                        ],
+                      ),
+                      child: Center(
+                        child: InkWell(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => AppointmentPage(
+                                  snapshot.data!.docs[index].id,
+                                  snapshot.data!.docs[index]["Patient Id"],
+                                  snapshot.data!.docs[index]["Date"],
+                                  snapshot.data!.docs[index]["Consultation"],
+                                  snapshot.data!.docs[index]["Time"],
+                                  snapshot.data!.docs[index]["Address"],
+                                  snapshot.data!.docs[index]["Doctor Name"],
+                                  snapshot.data!.docs[index]["Status"],
+                                ),
+                              ),
+                            ); // navigate to Appointments page
+                          },
+                          child: infocards(
+                            context,
+                            snapshot.data!.docs[index].get("Date"),
+                            snapshot.data!.docs[index].get("Patient Id"),
+                            snapshot.data!.docs[index].get("Time"),
+                            snapshot.data!.docs[index].get("Status"),
+                            snapshot.data!.docs[index]["Address"],
+                            snapshot.data!.docs[index]["Consultation"],
+                            snapshot.data!.docs[index].id,
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -282,67 +234,114 @@ Widget upcomingAppointments(String _uid) {
       });
 }
 
-Widget appointmentcards(
-  BuildContext context,
-  String time,
-  String address,
-  String patientId,
-  String dateOfAppointment,
-  String consultation,
-) {
-  return ListTile(
-    leading: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text(
-          dateOfAppointment,
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 18,
+Widget infocards(
+    BuildContext context,
+    String dateOfAppointment,
+    String patientId,
+    String timeOfappointment,
+    String statusOfAppointment,
+    String adressOfAppointment,
+    String consultation,
+    String appointmentId) {
+  return StreamBuilder(
+      stream: FirebaseFirestore.instance
+          .collection("Patient")
+          .doc(patientId)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return Center(
+            child: SizedBox(
+              height: 200,
+              width: 300,
+            ),
+          );
+        }
+        return InkWell(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => AppointmentPage(
+                  appointmentId,
+                  patientId,
+                  dateOfAppointment,
+                  consultation,
+                  timeOfappointment,
+                  adressOfAppointment,
+                  (snapshot.data!.get("First Name") +
+                      " " +
+                      snapshot.data!.get("Last Name")),
+                  statusOfAppointment,
+                ),
+              ),
+            ); // navigate to Appointments page
+          },
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ListTile(
+                title: Text(
+                  (snapshot.data!.get("First Name") +
+                      " " +
+                      snapshot.data!.get("Last Name")),
+                  style: TextStyle(fontSize: 18),
+                ),
+                trailing: CircleAvatar(
+                  backgroundImage:
+                      NetworkImage(snapshot.data?.get("Profile Photo")),
+                  radius: 32,
+                ),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      Icon(
+                        Icons.calendar_month_outlined,
+                        color: Colors.grey,
+                      ),
+                      SizedBox(
+                        width: 10,
+                      ),
+                      Text(dateOfAppointment)
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.watch_later_outlined,
+                        color: Colors.grey,
+                      ),
+                      SizedBox(
+                        width: 10,
+                      ),
+                      Text(timeOfappointment),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      CircleAvatar(
+                        backgroundColor: statusOfAppointment == "Confirmed"
+                            ? Colors.green
+                            : statusOfAppointment == "Pending"
+                                ? Colors.amber
+                                : Colors.red,
+                        radius: 6,
+                      ),
+                      SizedBox(
+                        width: 10,
+                      ),
+                      Text(statusOfAppointment)
+                    ],
+                  )
+                ],
+              )
+            ],
           ),
-        ),
-      ],
-    ),
-
-    title: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text(
-          time,
-          style: TextStyle(
-            color: Colors.teal,
-            fontSize: 18,
-          ),
-        ),
-        SizedBox(
-          height: 15,
-        ),
-        Text(
-          address,
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 18,
-          ),
-        ),
-      ],
-    ),
-    // subtitle: ,
-    trailing: InkWell(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) => AppointmentPage(
-                    patientId,
-                    dateOfAppointment,
-                    consultation,
-                  )),
-        ); // navigate to Appointments page
-      },
-      child: Icon(
-        Icons.more_vert,
-        color: Color.fromARGB(255, 21, 121, 91),
-      ),
-    ),
-  );
+        );
+      });
 }
