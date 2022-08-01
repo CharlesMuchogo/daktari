@@ -208,6 +208,7 @@ class _SignupState extends State<Signup> {
                                               i++) {
                                             DocumentSnapshot snap =
                                                 snapshot.data!.docs[i];
+
                                             doctorCategories
                                                 .add(DropdownMenuItem(
                                               child: Text(snap.id),
