@@ -6,8 +6,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class UpcomingAppointments extends StatelessWidget {
-  const UpcomingAppointments({super.key});
-
   @override
   Widget build(BuildContext context) {
     double height = MediaQuery.of(context).size.height;
@@ -109,7 +107,8 @@ class UpcomingAppointments extends StatelessWidget {
             .collection("Patient")
             .doc(patientId)
             .snapshots(),
-        builder: (context, snapshot) {
+        builder: (context,
+            AsyncSnapshot<DocumentSnapshot<Map<String, dynamic>>> snapshot) {
           if (!snapshot.hasData) {
             return Center(
               child: SizedBox(

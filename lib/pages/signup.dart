@@ -200,7 +200,7 @@ class _SignupState extends State<Signup> {
                                             );
                                           }
 
-                                          List<DropdownMenuItem>
+                                          List<DropdownMenuItem<String>>?
                                               doctorCategories = [];
 
                                           for (int i = 0;
@@ -209,11 +209,12 @@ class _SignupState extends State<Signup> {
                                             DocumentSnapshot snap =
                                                 snapshot.data!.docs[i];
 
-                                            doctorCategories
-                                                .add(DropdownMenuItem(
-                                              child: Text(snap.id),
-                                              value: snap.id,
-                                            ));
+                                            doctorCategories.add(
+                                              DropdownMenuItem(
+                                                child: Text(snap.id),
+                                                value: snap.id,
+                                              ),
+                                            );
                                           }
 
                                           return Row(

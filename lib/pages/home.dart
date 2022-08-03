@@ -5,7 +5,6 @@ import 'package:daktari/pages/appointment.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 
 class home extends StatefulWidget {
   @override
@@ -14,25 +13,6 @@ class home extends StatefulWidget {
 
 class _homeState extends State<home> {
   DateTime deadline = DateTime.now().subtract(Duration(minutes: 30));
-
-  // addtoTreatmentHistory() {
-  //   StreamBuilder(
-  //     stream: FirebaseFirestore.instance
-  //         .collection("Doctor")
-  //         .doc(FirebaseAuth.instance.currentUser!.uid)
-  //         .collection("My appointments")
-  //         .where("Time", isGreaterThan: deadline)
-  //         .snapshots(),
-  //     builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-  //       if (!snapshot.hasData) {
-  //         return Center(
-  //           child: CircularProgressIndicator(),
-  //         );
-  //       }
-
-  //     },
-  //   );
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -177,7 +157,7 @@ Widget upcommingAppointmentCard(BuildContext context) {
                     itemCount: snapshot.data!.docs.length,
                     scrollDirection: Axis.vertical,
                     itemBuilder: (context, index) => Container(
-                      height: height * 0.15,
+                      height: 150,
                       margin: EdgeInsets.only(
                           top: 15, bottom: 15, left: 25, right: 25),
                       decoration: BoxDecoration(
@@ -248,7 +228,8 @@ Widget infocards(
           .collection("Patient")
           .doc(patientId)
           .snapshots(),
-      builder: (context, snapshot) {
+      builder: (context,
+          AsyncSnapshot<DocumentSnapshot<Map<String, dynamic>>> snapshot) {
         if (!snapshot.hasData) {
           return Center(
             child: SizedBox(
