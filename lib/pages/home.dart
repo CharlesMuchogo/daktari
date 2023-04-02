@@ -6,6 +6,8 @@ import 'package:daktari/pages/appointment.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '404.dart';
+
 class home extends StatefulWidget {
   @override
   State<home> createState() => _homeState();
@@ -118,12 +120,26 @@ Widget textInfo(String text) {
   );
 }
 
+void CheckDocument(String _uid, BuildContext context)async{
+  final DocumentReference documentReference = FirebaseFirestore.instance.collection("Doctor").doc(_uid);
+  final DocumentSnapshot documentSnapshot = await documentReference.get();
+
+  if (!documentSnapshot.exists) {
+    Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) =>Not_Authorized())
+    );
+  }
+}
+
 Widget upcommingAppointmentCard(BuildContext context) {
+  final String _uid = FirebaseAuth.instance.currentUser!.uid;
+  CheckDocument(_uid, context);
   double height = MediaQuery.of(context).size.height;
   return StreamBuilder(
       stream: FirebaseFirestore.instance
           .collection("Doctor")
-          .doc(FirebaseAuth.instance.currentUser!.uid)
+          .doc(_uid)
           .collection("My appointments")
           .orderBy("Date", descending: false)
           .snapshots(),
