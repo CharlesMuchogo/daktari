@@ -1,19 +1,16 @@
-// ignore_for_file: use_key_in_widget_constructors, prefer_const_constructors
-
+import 'package:daktari/GlobalComponents/widgets.dart';
 import 'package:flutter/material.dart';
 
 class History extends StatelessWidget {
+  const History({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        title: Text("Treatment History"),
-      ),
-      body: Center(
-        child: Text(
-          "Your treatment history will appear here",
-        ),
+      appBar: AppBar(title: const Text("Treatment history")),
+      body: const EmptyState(
+        icon: Icons.history,
+        message: "Your treatment history will appear here",
       ),
     );
   }

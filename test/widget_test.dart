@@ -1,31 +1,30 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
-import 'package:daktari/GlobalComponents/autheticationwrapper.dart';
+import 'package:daktari/GlobalComponents/widgets.dart';
+import 'package:daktari/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:daktari/main.dart';
-
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const AuthenticationWrapper());
+  testWidgets('password field toggles visibility', (WidgetTester tester) async {
+    final controller = TextEditingController();
+    await tester.pumpWidget(MaterialApp(
+      theme: AppTheme.light(),
+      home: Scaffold(
+        body: AppTextField(
+            controller: controller, label: "Password", obscure: true),
+      ),
+    ));
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    EditableText field() => tester.widget(find.byType(EditableText));
+    expect(field().obscureText, isTrue);
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
+    await tester.tap(find.byIcon(Icons.visibility_outlined));
     await tester.pump();
+    expect(field().obscureText, isFalse);
+  });
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+  testWidgets('status chip shows status', (WidgetTester tester) async {
+    await tester.pumpWidget(
+        const MaterialApp(home: Scaffold(body: StatusChip("Pending"))));
+    expect(find.text("Pending"), findsOneWidget);
   });
 }

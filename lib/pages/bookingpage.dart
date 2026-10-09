@@ -2,6 +2,9 @@
 
 import 'package:flutter/material.dart';
 
+import 'package:daktari/GlobalComponents/widgets.dart';
+import 'package:daktari/theme/app_theme.dart';
+
 import 'package:internationalization/internationalization.dart';
 import 'package:daktari/GlobalComponents/restapi.dart';
 
@@ -71,7 +74,6 @@ class _BookingsPageState extends State<BookingsPage> {
 
       final snackBar = SnackBar(
         content: const Text('Your Appointment was booked successfully!'),
-        backgroundColor: (Colors.grey[900]),
         action: SnackBarAction(
           label: 'dismiss',
           onPressed: () {},
@@ -94,68 +96,60 @@ class _BookingsPageState extends State<BookingsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Book An Appointment"),
-        backgroundColor: Colors.teal,
-        centerTitle: true,
-      ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
+      appBar: AppBar(title: Text("Book an appointment")),
+      body: ListView(
+        padding: AppSpacing.page,
         children: [
-          SizedBox(
-            height: (MediaQuery.of(context).size.height * 0.15),
-            child: Center(
-              child: formfilled
-                  ? Text("")
-                  : Text(
-                      error,
-                      style: TextStyle(
-                          color: Colors.red,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold),
-                    ),
+          if (!formfilled) ...[
+            Text(
+              error,
+              style: TextStyle(
+                  color: Theme.of(context).colorScheme.error,
+                  fontWeight: FontWeight.w600),
+            ),
+            gap,
+          ],
+          DropdownButtonFormField<String>(
+            initialValue: _dropdownValue,
+            decoration: InputDecoration(
+              labelText: "Type of appointment",
+              prefixIcon: Icon(Icons.medical_services_outlined),
+            ),
+            onChanged: (value) {
+              setState(() {
+                _dropdownValue = value.toString();
+              });
+            },
+            items: doctorSpecialties.map((String items) {
+              return DropdownMenuItem(
+                value: items,
+                child: Text(items),
+              );
+            }).toList(),
+          ),
+          gap,
+          Card(
+            child: Column(
+              children: [
+                ListTile(
+                  onTap: () => _openDatePicker(context),
+                  leading: Icon(Icons.calendar_today_outlined),
+                  title: Text("Date"),
+                  trailing: Text(_selectedDate.isEmpty ? "Select" : _selectedDate),
+                ),
+                ListTile(
+                  onTap: () => _selectTime(context),
+                  leading: Icon(Icons.schedule_outlined),
+                  title: Text("Time"),
+                  trailing: Text(selectedTime.format(context)),
+                ),
+              ],
             ),
           ),
-          ListTile(
-            leading: IconButton(
-              onPressed: null,
-              icon: Icon(Icons.medical_services_outlined),
-            ),
-            title: Text("Select the type of Appointment"),
-            trailing: DropdownButton(
-              value: _dropdownValue,
-              onChanged: (value) {
-                setState(() {
-                  _dropdownValue = value.toString();
-                });
-              },
-              items: doctorSpecialties.map((String items) {
-                return DropdownMenuItem(
-                  value: items,
-                  child: Text(items),
-                );
-              }).toList(),
-            ),
-          ),
-          InkWell(
-            onTap: () => _openDatePicker(context),
-            child: ListTile(
-              leading: Icon(Icons.calendar_today),
-              title: Text("Select date of the Appointment"),
-              trailing: Text(_selectedDate),
-            ),
-          ),
-          InkWell(
-            onTap: () => _selectTime(context),
-            child: ListTile(
-              leading: Icon(Icons.timelapse_sharp),
-              title: Text("Select time of the Appointment"),
-              trailing: Text("${selectedTime.hour}:${selectedTime.minute}"),
-            ),
-          ),
-          ElevatedButton(
+          SizedBox(height: AppSpacing.xl),
+          FilledButton(
             onPressed: book,
-            child: Text("Book Appointment"),
+            child: Text("Book appointment"),
           )
         ],
       ),

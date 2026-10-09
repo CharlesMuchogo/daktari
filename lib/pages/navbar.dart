@@ -1,5 +1,3 @@
-// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
-
 import 'package:flutter/material.dart';
 import 'package:daktari/pages/history.dart';
 import 'package:daktari/pages/home.dart';
@@ -7,85 +5,51 @@ import 'package:daktari/pages/profile.dart';
 import 'package:daktari/pages/search.dart';
 
 class BottomBarScreen extends StatefulWidget {
+  const BottomBarScreen({super.key});
+
   @override
-  _BottomBarScreenState createState() => _BottomBarScreenState();
+  State<BottomBarScreen> createState() => _BottomBarScreenState();
 }
 
 class _BottomBarScreenState extends State<BottomBarScreen> {
-  List<Map<String, Widget>> _pages = [];
   int _selectedPageIndex = 0;
 
-  @override
-  void initState() {
-    _pages = [
-      {
-        'page': home(),
-      },
-      {
-        'page': Search(),
-      },
-      {
-        'page': History(),
-      },
-      {
-        'page': profile(),
-      },
-    ];
-    super.initState();
-  }
-
-  void _selectPage(int index) {
-    setState(() {
-      _selectedPageIndex = index;
-    });
-  }
+  final _pages = <Widget>[
+    home(),
+    const Search(),
+    History(),
+    profile(),
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _pages[_selectedPageIndex]['page'],
-      bottomNavigationBar: BottomAppBar(
-        shape: CircularNotchedRectangle(),
-        notchMargin: 0.01,
-        clipBehavior: Clip.antiAlias,
-        child: Container(
-          height: kBottomNavigationBarHeight * 0.98,
-          child: Container(
-            decoration: BoxDecoration(
-              border: Border(
-                top: BorderSide(
-                  width: 0.5,
-                ),
-              ),
-            ),
-            child: BottomNavigationBar(
-              onTap: _selectPage,
-              unselectedItemColor: Colors.grey[300],
-              showUnselectedLabels: true,
-              unselectedFontSize: 14,
-              selectedItemColor: Colors.white,
-              currentIndex: _selectedPageIndex,
-              items: [
-                BottomNavigationBarItem(
-                    icon: Icon(Icons.home),
-                    label: 'Home',
-                    backgroundColor: Colors.teal),
-                BottomNavigationBarItem(
-                    icon: Icon(Icons.search),
-                    label: 'Search',
-                    backgroundColor: Colors.teal),
-                BottomNavigationBarItem(
-                    icon: Icon(Icons.medical_services),
-                    label: 'History',
-                    backgroundColor: Colors.teal),
-                BottomNavigationBarItem(
-                    icon: Icon(Icons.person_outline),
-                    label: "Profile",
-                    backgroundColor: Colors.teal),
-              ],
-            ),
+      body: IndexedStack(index: _selectedPageIndex, children: _pages),
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _selectedPageIndex,
+        onDestinationSelected: (index) =>
+            setState(() => _selectedPageIndex = index),
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.home_outlined),
+            selectedIcon: Icon(Icons.home),
+            label: 'Home',
           ),
-        ),
+          NavigationDestination(
+            icon: Icon(Icons.search),
+            label: 'Search',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.medical_services_outlined),
+            selectedIcon: Icon(Icons.medical_services),
+            label: 'History',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.person_outline),
+            selectedIcon: Icon(Icons.person),
+            label: 'Profile',
+          ),
+        ],
       ),
     );
   }

@@ -1,6 +1,6 @@
-// ignore_for_file: prefer_const_literals_to_create_immutables, prefer_const_constructors, use_key_in_widget_constructors
-
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:daktari/GlobalComponents/widgets.dart';
+import 'package:daktari/theme/app_theme.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -21,201 +21,111 @@ class AppointmentPage extends StatelessWidget {
     this.timeOfAppointment,
     this.addressOfHospital,
     this.doctorName,
-    this.status,
-  );
+    this.status, {
+    super.key,
+  });
+
+  DocumentReference get _doctorAppointment => FirebaseFirestore.instance
+      .collection("Doctor")
+      .doc(FirebaseAuth.instance.currentUser!.uid)
+      .collection("My appointments")
+      .doc(appointmentId);
+
+  DocumentReference get _patientAppointment => FirebaseFirestore.instance
+      .collection("Patient")
+      .doc(patientId)
+      .collection("My appointments")
+      .doc(appointmentId);
+
+  Future<void> _cancel(BuildContext context) async {
+    if (!await confirm(context,
+        title: "Do you want to cancel the appointment?",
+        confirmLabel: "Cancel appointment",
+        destructive: true)) {
+      return;
+    }
+    if (status != "Cancelled") {
+      _patientAppointment.update({"Status": "Cancelled"});
+    }
+    _doctorAppointment.delete();
+    if (context.mounted) Navigator.pop(context);
+  }
+
+  Future<void> _confirm(BuildContext context) async {
+    if (!await confirm(context,
+        title: "Do you want to confirm the appointment?",
+        confirmLabel: "Confirm")) {
+      return;
+    }
+    _doctorAppointment.update({"Status": "Confirmed"});
+    _patientAppointment.update({"Status": "Confirmed"});
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text("You have successfully confirmed the appointment")));
+    Navigator.pop(context);
+  }
 
   @override
   Widget build(BuildContext context) {
-    cancelappointment() {
-      showDialog(
-          context: context,
-          builder: (context) {
-            return Center(
-              child: CircularProgressIndicator(),
-            );
-          });
-      if (status == "Cancelled") {
-        FirebaseFirestore.instance
-            .collection("Doctor")
-            .doc(FirebaseAuth.instance.currentUser!.uid)
-            .collection("My appointments")
-            .doc(appointmentId)
-            .delete();
-      } else {
-        FirebaseFirestore.instance
-            .collection("Patient")
-            .doc(patientId)
-            .collection("My appointments")
-            .doc(appointmentId)
-            .update({"Status": "Cancelled"});
-
-        FirebaseFirestore.instance
-            .collection("Doctor")
-            .doc(FirebaseAuth.instance.currentUser!.uid)
-            .collection("My appointments")
-            .doc(appointmentId)
-            .delete();
-      }
-      Navigator.pop(context);
-    }
-
-    confirmappointment() {
-      FirebaseFirestore.instance
-          .collection("Doctor")
-          .doc(FirebaseAuth.instance.currentUser!.uid)
-          .collection("My appointments")
-          .doc(appointmentId)
-          .update({"Status": "Confirmed"});
-
-      FirebaseFirestore.instance
-          .collection("Patient")
-          .doc(patientId)
-          .collection("My appointments")
-          .doc(appointmentId)
-          .update({"Status": "Confirmed"});
-
-      showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              title: Text("Confirmed"),
-              content:
-                  Text("You have successifully confirmed your appointment"),
-              actions: [
-                MaterialButton(
-                  onPressed: null,
-                  child: Text("Okay"),
-                )
-              ],
-            );
-          });
-    }
-
+    final theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Appointment"),
-        centerTitle: true,
-        backgroundColor: Colors.teal,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(15.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
+      appBar: AppBar(title: const Text("Appointment")),
+      body: SafeArea(
+        child: ListView(
+          padding: AppSpacing.page,
           children: [
-            SizedBox(
-              height: 20,
-            ),
-            ListTile(
-              leading: Icon(Icons.calendar_month_outlined),
-              title: Text(dateOfAppointment),
-            ),
-            ListTile(
-              leading: Icon(Icons.access_time),
-              title: Text(timeOfAppointment),
-            ),
-            ListTile(
-              leading: Icon(Icons.location_on),
-              title: Text(
-                addressOfHospital,
-              ),
-            ),
-            ListTile(
-              leading: Icon(Icons.medical_services),
-              title: Text(
-                typeOfConsultation,
-              ),
-            ),
-            ListTile(
-              leading: Icon(Icons.person_outline),
-              title: Text(
-                doctorName,
-              ),
-              //should lead user to the doctors page of specific doctor
-            ),
             Row(
-              mainAxisAlignment: status == "Confirmed"
-                  ? MainAxisAlignment.center
-                  : MainAxisAlignment.spaceAround,
               children: [
-                ElevatedButton(
-                  onPressed: () {
-                    showDialog(
-                      context: context,
-                      builder: (context) {
-                        return AlertDialog(
-                          title: Text("Do you want to cancel the appointment?"),
-                          actions: [
-                            MaterialButton(
-                              elevation: 5,
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                              },
-                              child: Text(
-                                "No",
-                                style:
-                                    TextStyle(color: Colors.teal, fontSize: 18),
-                              ),
-                            ),
-                            MaterialButton(
-                              elevation: 5,
-                              onPressed: () {
-                                Navigator.of(context).pop(cancelappointment());
-                              },
-                              child: Text(
-                                "Yes",
-                                style:
-                                    TextStyle(color: Colors.red, fontSize: 18),
-                              ),
-                            )
-                          ],
-                        );
-                      },
-                    );
-                  },
-                  child: Text("Cancel Appointment"),
+                Expanded(
+                  child: Text(doctorName,
+                      style: theme.textTheme.headlineSmall
+                          ?.copyWith(fontWeight: FontWeight.bold)),
                 ),
-                status == "Confirmed"
-                    ? Container()
-                    : ElevatedButton(
-                        onPressed: () {
-                          showDialog(
-                            context: context,
-                            builder: (context) {
-                              return AlertDialog(
-                                title: Text(
-                                    "Do you want to confirm the appointment?"),
-                                actions: [
-                                  MaterialButton(
-                                    elevation: 5,
-                                    onPressed: () {
-                                      Navigator.of(context).pop();
-                                    },
-                                    child: Text(
-                                      "No",
-                                      style: TextStyle(
-                                          color: Colors.teal, fontSize: 18),
-                                    ),
-                                  ),
-                                  MaterialButton(
-                                    elevation: 5,
-                                    onPressed: () {
-                                      Navigator.of(context)
-                                          .pop(confirmappointment());
-                                    },
-                                    child: Text(
-                                      "Yes",
-                                      style: TextStyle(
-                                          color: Colors.red, fontSize: 18),
-                                    ),
-                                  )
-                                ],
-                              );
-                            },
-                          );
-                        },
-                        child: Text("Confirm Appointment"),
-                      )
+                StatusChip(status),
               ],
+            ),
+            gapLarge,
+            Card(
+              child: Column(
+                children: [
+                  ListTile(
+                    leading: const Icon(Icons.calendar_month_outlined),
+                    title: const Text("Date"),
+                    subtitle: Text(dateOfAppointment),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.schedule_outlined),
+                    title: const Text("Time"),
+                    subtitle: Text(timeOfAppointment),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.location_on_outlined),
+                    title: const Text("Location"),
+                    subtitle: Text(addressOfHospital),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.medical_services_outlined),
+                    title: const Text("Consultation"),
+                    subtitle: Text(typeOfConsultation),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xl),
+            if (status != "Confirmed") ...[
+              FilledButton(
+                onPressed: () => _confirm(context),
+                child: const Text("Confirm appointment"),
+              ),
+              gap,
+            ],
+            OutlinedButton(
+              style: OutlinedButton.styleFrom(
+                foregroundColor: theme.colorScheme.error,
+                side: BorderSide(color: theme.colorScheme.error),
+              ),
+              onPressed: () => _cancel(context),
+              child: const Text("Cancel appointment"),
             ),
           ],
         ),

@@ -5,6 +5,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:daktari/GlobalComponents/authenticationservice.dart';
 import 'package:daktari/GlobalComponents/autheticationwrapper.dart';
+import 'package:daktari/theme/app_theme.dart';
 
 import 'package:provider/provider.dart';
 
@@ -17,7 +18,7 @@ Future<void> main() async {
         Provider<AuthenticationService>(
           create: (_) => AuthenticationService(FirebaseAuth.instance),
         ),
-        StreamProvider(
+        StreamProvider<User?>(
           create: (context) =>
               context.read<AuthenticationService>().authstateChanges,
           initialData: null,
@@ -26,11 +27,8 @@ Future<void> main() async {
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         home: AuthenticationWrapper(),
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSwatch(
-            primarySwatch: Colors.teal,
-          ),
-        ),
+        theme: AppTheme.light(),
+        darkTheme: AppTheme.dark(),
       ),
     ),
   );

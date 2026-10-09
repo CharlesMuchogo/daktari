@@ -1,7 +1,6 @@
-// ignore_for_file: prefer_const_constructors, prefer_const_constructors_in_immutables, use_key_in_widget_constructors
-
 import 'package:cloud_firestore/cloud_firestore.dart';
-
+import 'package:daktari/GlobalComponents/widgets.dart';
+import 'package:daktari/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
 class UpdateDetails extends StatefulWidget {
@@ -11,136 +10,100 @@ class UpdateDetails extends StatefulWidget {
   final String phoneNumber;
   final String currentHospital;
   final String description;
-  UpdateDetails(this.userId, this.firstName, this.lastName, this.phoneNumber,
-      this.currentHospital, this.description);
+  const UpdateDetails(this.userId, this.firstName, this.lastName,
+      this.phoneNumber, this.currentHospital, this.description,
+      {super.key});
 
   @override
   State<UpdateDetails> createState() => _UpdateDetailsState();
 }
 
 class _UpdateDetailsState extends State<UpdateDetails> {
+  late final firstnamecontroler = TextEditingController(text: widget.firstName);
+  late final lastnamecontroler = TextEditingController(text: widget.lastName);
+  late final addresscontroler =
+      TextEditingController(text: widget.currentHospital);
+  late final phonenumbercontroler =
+      TextEditingController(text: widget.phoneNumber);
+  late final descriptioncontroler =
+      TextEditingController(text: widget.description);
+
+  @override
+  void dispose() {
+    firstnamecontroler.dispose();
+    lastnamecontroler.dispose();
+    addresscontroler.dispose();
+    phonenumbercontroler.dispose();
+    descriptioncontroler.dispose();
+    super.dispose();
+  }
+
+  Future<void> updateDetails() async {
+    showLoading(context);
+    try {
+      await FirebaseFirestore.instance
+          .collection("Doctor")
+          .doc(widget.userId)
+          .update(
+        {
+          "First Name": firstnamecontroler.text,
+          "Last Name": lastnamecontroler.text,
+          "Current Hospital": addresscontroler.text,
+          "Phone Number": phonenumbercontroler.text,
+          "Description": descriptioncontroler.text
+        },
+      );
+      if (!mounted) return;
+      Navigator.pop(context); // loading dialog
+      Navigator.pop(context); // this page
+    } on FirebaseException catch (e) {
+      if (!mounted) return;
+      Navigator.pop(context);
+      showMessage(context, title: "Error", message: e.message ?? e.code);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    TextEditingController firstnamecontroler = TextEditingController();
-    TextEditingController lastnamecontroler = TextEditingController();
-    TextEditingController addresscontroler = TextEditingController();
-    TextEditingController phonenumbercontroler = TextEditingController();
-    TextEditingController descriptioncontroler = TextEditingController();
-    TextEditingController Schedulecontroler = TextEditingController();
-
-    firstnamecontroler.text = widget.firstName;
-    lastnamecontroler.text = widget.lastName;
-    phonenumbercontroler.text = widget.phoneNumber;
-    addresscontroler.text = widget.currentHospital;
-
-    Future updateDetails() async {
-      showDialog(
-          context: context,
-          builder: (context) {
-            return Center(
-              child: CircularProgressIndicator(),
-            );
-          });
-      try {
-        await FirebaseFirestore.instance
-            .collection("Doctor")
-            .doc(widget.userId)
-            .update(
-          {
-            "First Name": firstnamecontroler.text,
-            "Last Name": lastnamecontroler.text,
-            "Current Hospital": addresscontroler.text,
-            "Phone Number": phonenumbercontroler.text,
-            "Description": descriptioncontroler.text
-          },
-        );
-
-        Navigator.pop(context);
-      } on FirebaseException catch (e) {
-        showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              title: Text("Error!"),
-              content: Text(
-                e.message.toString(),
-              ),
-            );
-          },
-        );
-      }
-    }
-
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Update Details"),
-        centerTitle: true,
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(25.0),
-          child: Column(
-            children: [
-              textfields(firstnamecontroler, "First Name"),
-              SizedBox(
-                height: 10,
-              ),
-              textfields(lastnamecontroler, "Last name"),
-              SizedBox(
-                height: 10,
-              ),
-              textfields(addresscontroler, "Address"),
-              SizedBox(
-                height: 10,
-              ),
-              textfields(phonenumbercontroler, "Phone Number"),
-              SizedBox(
-                height: 10,
-              ),
-              textfields(descriptioncontroler, "Description"),
-              SizedBox(
-                height: 10,
-              ),
-              textfields(Schedulecontroler, "Add Schedule"),
-              SizedBox(
-                height: 10,
-              ),
-              ElevatedButton(
-                  onPressed: updateDetails, child: Text("Save Details"))
-            ],
-          ),
+      appBar: AppBar(title: const Text("Update details")),
+      body: SafeArea(
+        child: ListView(
+          padding: AppSpacing.page,
+          children: [
+            AppTextField(
+                controller: firstnamecontroler,
+                label: "First name",
+                icon: Icons.person_outline),
+            gap,
+            AppTextField(
+                controller: lastnamecontroler,
+                label: "Last name",
+                icon: Icons.person_outline),
+            gap,
+            AppTextField(
+                controller: addresscontroler,
+                label: "Current hospital",
+                icon: Icons.location_on_outlined),
+            gap,
+            AppTextField(
+                controller: phonenumbercontroler,
+                label: "Phone number",
+                icon: Icons.phone_outlined,
+                keyboardType: TextInputType.phone),
+            gap,
+            AppTextField(
+                controller: descriptioncontroler,
+                label: "Description",
+                icon: Icons.description_outlined,
+                maxLines: 4,
+                textInputAction: TextInputAction.newline),
+            const SizedBox(height: AppSpacing.xl),
+            FilledButton(
+                onPressed: updateDetails, child: const Text("Save details")),
+          ],
         ),
       ),
     );
   }
-}
-
-Widget textfields(
-  TextEditingController textfieldcontroler,
-  String placeholder,
-) {
-  return TextFormField(
-    controller: textfieldcontroler,
-    decoration: InputDecoration(
-      labelText: placeholder,
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10.0),
-        borderSide: BorderSide(color: Colors.teal),
-      ),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10.0),
-        borderSide: BorderSide(
-          color: Colors.black,
-          width: 1.5,
-        ),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
-        borderSide: BorderSide(
-          color: Colors.black45,
-          width: 1.5,
-        ),
-      ),
-    ),
-  );
 }

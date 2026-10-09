@@ -1,160 +1,84 @@
-// ignore_for_file: prefer_const_literals_to_create_immutables, prefer_const_constructors
-
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:daktari/pages/home.dart';
+import 'package:daktari/GlobalComponents/widgets.dart';
+import 'package:daktari/theme/app_theme.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class Search extends StatefulWidget {
-  const Search({Key? key}) : super(key: key);
+  const Search({super.key});
 
   @override
   State<Search> createState() => _SearchState();
 }
 
-TextEditingController searchdoctorcontroler = TextEditingController();
-
 class _SearchState extends State<Search> {
-  @override
-  void initState() {
-    super.initState();
-  }
+  final searchdoctorcontroler = TextEditingController();
 
-  onSearch(String search) {
-    setState(() {});
+  @override
+  void dispose() {
+    searchdoctorcontroler.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: false,
-      appBar: AppBar(
-        title: Text("Search Appointments"),
-        centerTitle: true,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.fromLTRB(0, 30, 0, 0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 30),
-                child: Container(
-                  height: 39,
-                  width: MediaQuery.of(context).size.width * 0.9,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.all(
-                      Radius.circular(30),
-                    ),
-                    color: Color.fromARGB(246, 208, 203, 203),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey,
-                        offset: Offset(0.0, 1.0), //(x,y)
-                        blurRadius: 6.0,
-                      ),
-                    ],
-                  ),
-                  child: SizedBox(
-                    width: 300,
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 30, right: 30),
-                      child: TextField(
-                        onChanged: (val) => onSearch(val),
-                        controller: searchdoctorcontroler,
-                        decoration: InputDecoration(
-                            prefixIcon: Icon(Icons.search),
-                            border: InputBorder.none,
-                            //labelText: 'Enter Name',
-                            hintText: 'Search for a appointment'),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
+      appBar: AppBar(title: const Text("Search appointments")),
+      body: Column(
+        children: [
+          Padding(
+            padding: AppSpacing.page.copyWith(top: AppSpacing.sm),
+            child: SearchBar(
+              controller: searchdoctorcontroler,
+              hintText: "Search by date, time, status…",
+              leading: const Icon(Icons.search),
+              elevation: const WidgetStatePropertyAll(0),
+              padding: const WidgetStatePropertyAll(
+                  EdgeInsets.symmetric(horizontal: AppSpacing.md)),
+              onChanged: (_) => setState(() {}),
             ),
-            Expanded(child: searchinfo(searchdoctorcontroler.text))
-          ],
-        ),
+          ),
+          Expanded(child: searchinfo(searchdoctorcontroler.text)),
+        ],
       ),
     );
   }
 }
 
-Widget searchinfo(String controler) {
-  return StreamBuilder(
+Widget searchinfo(String query) {
+  return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
           .collection("Doctor")
           .doc(FirebaseAuth.instance.currentUser!.uid)
           .collection("My appointments")
           .snapshots(),
-      builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-        if (!snapshot.hasData) {
-          return Center(
-            child: CircularProgressIndicator(),
-          );
-        }
+      builder: (context, snapshot) {
         if (snapshot.hasError) {
-          return Center(
-            child: Text("Oops, an error occured. please try again"),
-          );
+          return const EmptyState(
+              icon: Icons.error_outline,
+              message: "Oops, an error occurred. Please try again.");
         }
-        if (snapshot.data!.docs.isEmpty) {
-          return Center(
-            child: Text("No results found for your search"),
-          );
+        if (!snapshot.hasData) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        final results = snapshot.data!.docs
+            .where((doc) => doc
+                .data()
+                .toString()
+                .toLowerCase()
+                .contains(query.toLowerCase()))
+            .toList();
+        if (results.isEmpty) {
+          return const EmptyState(
+              icon: Icons.search_off,
+              message: "No results found for your search");
         }
 
-        return ListView(
-          shrinkWrap: true,
-          children: [
-            Center(
-              child: Column(
-                children: [
-                  ...(snapshot.data!.docs
-                      .where(
-                    (QueryDocumentSnapshot<Object?> element) => element
-                        .data()
-                        .toString()
-                        .toLowerCase()
-                        .contains(controler.toLowerCase()),
-                  )
-                      .map(
-                    (QueryDocumentSnapshot<Object?> data) {
-                      return Container(
-                        width: MediaQuery.of(context).size.width * 0.9,
-                        height: 150,
-                        margin: EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.all(
-                            Radius.circular(10),
-                          ),
-                          color: Color.fromRGBO(245, 242, 242, 20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey,
-                              offset: Offset(0.0, 1.0),
-                              blurRadius: 6.0,
-                            ),
-                          ],
-                        ),
-                        child: infocards(
-                            context,
-                            data["Date"],
-                            data["Patient Id"],
-                            data["Time"],
-                            data["Status"],
-                            data["Time"],
-                            data["Consultation"],
-                            data.id),
-                      );
-                    },
-                  )),
-                ],
-              ),
-            ),
-          ],
+        return ListView.separated(
+          padding: AppSpacing.page.copyWith(top: 0),
+          itemCount: results.length,
+          separatorBuilder: (_, _) => gap,
+          itemBuilder: (context, index) => AppointmentCard(results[index]),
         );
       });
 }

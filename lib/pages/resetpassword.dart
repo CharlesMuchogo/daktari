@@ -1,103 +1,70 @@
+import 'package:daktari/GlobalComponents/widgets.dart';
+import 'package:daktari/theme/app_theme.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-class ResetPassword extends StatelessWidget {
-  TextEditingController resetPassword = TextEditingController();
-  Future _resetPassword(BuildContext context) async {
+class ResetPassword extends StatefulWidget {
+  const ResetPassword({super.key});
+
+  @override
+  State<ResetPassword> createState() => _ResetPasswordState();
+}
+
+class _ResetPasswordState extends State<ResetPassword> {
+  final resetPassword = TextEditingController();
+
+  @override
+  void dispose() {
+    resetPassword.dispose();
+    super.dispose();
+  }
+
+  Future<void> _resetPassword() async {
     try {
       await FirebaseAuth.instance
           .sendPasswordResetEmail(email: resetPassword.text.trim());
-      return showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              title: Text(
-                "Success",
-                style: TextStyle(color: Colors.green),
-              ),
-              content: Text(
-                "Password reset email has been sent. Check your mail. If you don't see the mail in your inbox, check your spam folder",
-              ),
-              actions: [
-                MaterialButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: Text("Okay", style: TextStyle(color: Colors.blue)),
-                )
-              ],
-            );
-          });
+      if (!mounted) return;
+      showMessage(
+        context,
+        title: "Check your email",
+        message:
+            "A password reset email has been sent. If you don't see it in your inbox, check your spam folder.",
+      );
     } on FirebaseAuthException catch (e) {
-      showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              title: Text("Failed!", style: TextStyle(color: Colors.red)),
-              content: Text(
-                e.message.toString(),
-              ),
-              actions: [
-                MaterialButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: Text("Okay", style: TextStyle(color: Colors.blue)),
-                )
-              ],
-            );
-          });
+      if (!mounted) return;
+      showMessage(context, title: "Failed", message: e.message ?? e.code);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Reset password"),
-        centerTitle: true,
-      ),
-      body: Center(
+      appBar: AppBar(title: const Text("Reset password")),
+      body: SafeArea(
         child: SingleChildScrollView(
+          padding: AppSpacing.page,
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                "Enter your email to reset password",
-                style: TextStyle(fontSize: 20),
+                "Enter the email linked to your account and we'll send you a link to reset your password.",
+                style: theme.textTheme.bodyLarge
+                    ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
               ),
-              Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: TextField(
-                  decoration: InputDecoration(
-                    labelText: 'Email',
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10.0),
-                      borderSide: BorderSide(color: Colors.teal),
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10.0),
-                      borderSide: BorderSide(
-                        color: Colors.black,
-                        width: 1.5,
-                      ),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide(
-                        color: Colors.black45,
-                        width: 1.5,
-                      ),
-                    ),
-                  ),
-                  controller: resetPassword,
-                ),
+              gapLarge,
+              AppTextField(
+                controller: resetPassword,
+                label: "Email",
+                icon: Icons.email_outlined,
+                keyboardType: TextInputType.emailAddress,
+                textInputAction: TextInputAction.done,
               ),
-              ElevatedButton(
-                  onPressed: () {
-                    _resetPassword(context);
-                  },
-                  child: Text("Reset Password"))
+              gapLarge,
+              FilledButton(
+                onPressed: _resetPassword,
+                child: const Text("Send reset link"),
+              ),
             ],
           ),
         ),
