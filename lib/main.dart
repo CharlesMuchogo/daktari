@@ -1,35 +1,19 @@
-// ignore_for_file: prefer_const_constructors
-
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:daktari/GlobalComponents/authenticationservice.dart';
-import 'package:daktari/GlobalComponents/autheticationwrapper.dart';
-import 'package:daktari/theme/app_theme.dart';
-
-import 'package:provider/provider.dart';
+import 'package:hydrated_bloc/hydrated_bloc.dart';
+import 'package:daktari/app.dart';
+import 'package:daktari/dependencies.dart';
+import 'package:daktari/presentation/navigation/chat_router.dart';
+import 'package:path_provider/path_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  runApp(
-    MultiProvider(
-      providers: [
-        Provider<AuthenticationService>(
-          create: (_) => AuthenticationService(FirebaseAuth.instance),
-        ),
-        StreamProvider<User?>(
-          create: (context) =>
-              context.read<AuthenticationService>().authstateChanges,
-          initialData: null,
-        )
-      ],
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        home: AuthenticationWrapper(),
-        theme: AppTheme.light(),
-        darkTheme: AppTheme.dark(),
-      ),
+  HydratedBloc.storage = await HydratedStorage.build(
+    storageDirectory: HydratedStorageDirectory(
+      (await getApplicationDocumentsDirectory()).path,
     ),
   );
+  ChatRouter.init();
+  runApp(App(dependencies: Dependencies.create()));
 }
